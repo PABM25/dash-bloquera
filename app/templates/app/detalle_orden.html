@@ -1,0 +1,159 @@
+{% extends 'app/base.html' %}
+{% load static %}
+
+{% block contenido %}
+<div class="ticket">
+    <!-- Contenedor del Logo e Información de la Empresa -->
+    <div class="logo-container">
+        <!-- Logo -->
+        <div class="logo">
+            <img src="{% static 'app/img/logo.png' %}" alt="Logo" class="logo-img">
+        </div>
+
+        <!-- Información de la empresa -->
+        <div class="empresa">
+            <strong>CONSTRUCCIONES V & G LIZ CASTILLO GARCIA SPA</strong><br>
+            RUT: 77.858.577-4<br>
+            Dirección: Vilaco 301, Toconao<br>
+            Teléfono: +56 9 1234 5678
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Información de la orden -->
+    <div class="orden-info">
+        <strong>Orden de Compra #{{ orden.id }}</strong><br>
+        Cliente: {{ orden.cliente }}<br>
+        Fecha: {{ orden.fecha|date:"d-m-Y H:i" }}<br>
+        Dirección: {{ orden.direccion }}
+    </div>
+
+    <hr>
+
+    <!-- Tabla de productos -->
+    <strong>Detalle</strong><br>
+    <br>
+    <table class="productos">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cant</th>
+                <th>Precio Unitario</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ orden.producto }}</td>
+                <td>{{ orden.cantidad }}</td>
+                <td>${{ orden.precio_unitario }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <!-- Total -->
+    <div class="total">
+        <strong>Total a Pagar: ${{ orden.total }}</strong>
+    </div>
+
+    <hr>
+
+    <!-- Mensaje final -->
+    <div class="gracias">
+        ¡Gracias por su compra!<br>
+        Esperamos atenderle pronto.
+    </div>
+
+    <!-- Botón de impresión -->
+    <button onclick="window.print()" class="print-btn">🖨️ Imprimir</button>
+</div>
+
+<!-- Estilos específicos para la impresión -->
+<style>
+    /* Estilos generales */
+    .ticket {
+        width: 80mm;
+        max-width: 100%;
+        font-family: Arial, sans-serif;
+        font-size: 15px;
+        text-align: center;
+        padding: 10px;
+        margin: auto;
+        background: white;
+    }
+
+    .logo-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .logo-img {
+        width: auto;
+        height: 80px;
+    }
+
+    .empresa {
+        text-align: left;
+        font-size: 15px;
+    }
+
+    .empresa strong {
+        font-size: 15px;
+    }
+
+    .empresa br {
+        line-height: 1.4;
+    }
+
+    .orden-info, .total, .gracias {
+        margin-bottom: 10px;
+    }
+
+    /* Estilos de la tabla */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        border: 1px solid black !important; /* Forzar bordes en impresión */
+        padding: 5px;
+        text-align: center;
+    }
+
+    /* Botón de impresión */
+    .print-btn {
+        margin-top: 10px;
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+
+    /* Asegurar que la impresión mantenga el diseño */
+    @media print {
+        @page {
+            margin: 0; /* Eliminar márgenes en impresión */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: white;
+        }
+
+        .ticket {
+            box-shadow: none;
+        }
+
+        .print-btn {
+            display: none; /* Ocultar el botón de impresión */
+        }
+    }
+</style>
+{% endblock %}

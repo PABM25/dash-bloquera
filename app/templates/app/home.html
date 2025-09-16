@@ -1,0 +1,100 @@
+{% extends 'app/base.html' %}
+{% load static %}
+
+{% block contenido %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Asistencias del Mes -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card text-white bg-primary shadow-sm h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title text-uppercase fw-bold">Asistencias del Mes</h5>
+                        <h1 class="card-text fw-bold">{{ asistencia_del_mes }}</h1>
+                    </div>
+                    <i class="fas fa-user-check fa-4x text-white-50"></i>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Ventas Totales -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card text-white bg-info shadow-sm h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title text-uppercase fw-bold">Ventas Totales</h5>
+                        <h1 class="card-text fw-bold">${{ total_ventas|floatformat:2 }}</h1>
+                    </div>
+                    <i class="fas fa-shopping-cart fa-4x text-white-50"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gastos Totales -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card text-white bg-danger shadow-sm h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title text-uppercase fw-bold">Gastos Totales</h5>
+                        <h1 class="card-text fw-bold">${{ total_gastos|floatformat:2 }}</h1>
+                    </div>
+                    <i class="fas fa-dollar-sign fa-4x text-white-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico Ventas vs Gastos -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Ventas y Gastos por Mes</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('myChart');
+    const meses_etiquetas = JSON.parse('{{ meses_etiquetas_json|safe }}');
+    const datos_ventas = JSON.parse('{{ datos_ventas_json|safe }}');
+    const datos_gastos = JSON.parse('{{ datos_gastos_json|safe }}');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: meses_etiquetas,
+            datasets: [
+                {
+                    label: 'Ventas Mensuales ($)',
+                    data: datos_ventas,
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Gastos Mensuales ($)',
+                    data: datos_gastos,
+                    backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+{% endblock %}
