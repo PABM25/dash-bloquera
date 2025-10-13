@@ -3,6 +3,7 @@ from .views import *
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 urlpatterns = [
     path('', home, name='home'),
     path('crear/', crear_orden, name='crear_orden'),
@@ -19,6 +20,7 @@ urlpatterns = [
     path('gastos/', lista_gastos, name='lista_gastos'),
     path('gastos/registrar/', registrar_gasto, name='registrar_gasto'),
 ]
-
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # Usamos la configuración de STATIC_URL y STATICFILES_DIRS que ya definiste.
+    # Esta línea le dice a Django dónde buscar cuando se solicita /static/
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

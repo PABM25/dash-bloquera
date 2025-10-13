@@ -1,100 +1,232 @@
 {% extends 'app/base.html' %}
+
 {% load static %}
 
+{% block extra_head %}
+    <!-- Asegúrate de que Chart.js esté cargado -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Necesitamos el plugin de gradientes si queremos colores bonitos en el donut -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-gradient@0.6.1/dist/chartjs-plugin-gradient.min.js"></script>
+    <style>
+        /* Estilo para que los contenedores de gráficos sean responsive en Bootstrap */
+        .chart-container-wrapper {
+            position: relative;
+            height: 300px; /* Altura fija para el ejemplo, pero responsive */
+        }
+        .donut-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+    </style>
+{% endblock extra_head %}
+
 {% block contenido %}
-<div class="container-fluid mt-4">
-    <div class="row">
-        <!-- Asistencias del Mes -->
-        <div class="col-md-6 col-lg-3 mb-4">
-            <div class="card text-white bg-primary shadow-sm h-100">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="card-title text-uppercase fw-bold">Asistencias del Mes</h5>
-                        <h1 class="card-text fw-bold">{{ asistencia_del_mes }}</h1>
-                    </div>
-                    <i class="fas fa-user-check fa-4x text-white-50"></i>
-                </div>
-            </div>
-        </div>
 
-
-        <!-- Ventas Totales -->
-        <div class="col-md-6 col-lg-3 mb-4">
-            <div class="card text-white bg-info shadow-sm h-100">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="card-title text-uppercase fw-bold">Ventas Totales</h5>
-                        <h1 class="card-text fw-bold">${{ total_ventas|floatformat:2 }}</h1>
-                    </div>
-                    <i class="fas fa-shopping-cart fa-4x text-white-50"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Gastos Totales -->
-        <div class="col-md-6 col-lg-3 mb-4">
-            <div class="card text-white bg-danger shadow-sm h-100">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="card-title text-uppercase fw-bold">Gastos Totales</h5>
-                        <h1 class="card-text fw-bold">${{ total_gastos|floatformat:2 }}</h1>
-                    </div>
-                    <i class="fas fa-dollar-sign fa-4x text-white-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Gráfico Ventas vs Gastos -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0">Ventas y Gastos por Mes</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="myChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="mb-4">
+    <h2 class="h3 fw-bold text-dark mb-2">Resumen del Dashboard</h2>
+    <p class="text-secondary">Monitorea el rendimiento de tu negocio.</p>
 </div>
 
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const ctx = document.getElementById('myChart');
-    const meses_etiquetas = JSON.parse('{{ meses_etiquetas_json|safe }}');
-    const datos_ventas = JSON.parse('{{ datos_ventas_json|safe }}');
-    const datos_gastos = JSON.parse('{{ datos_gastos_json|safe }}');
+<!-- Tarjetas KPI (Adaptadas de tu código original y reescritas a Bootstrap) -->
+<div class="row g-4 mb-5">
+    
+    <!-- Tarjeta 1: Ingresos Totales (Originalmente Morado) -->
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card kpi-purple-card h-100 p-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <p class="text-muted-light text-uppercase mb-1 small fw-medium">Ingresos Totales</p>
+                    <p class="fs-3 fw-bold mt-1 mb-0">$124,500</p>
+                    <p class="text-secondary-light small mt-1">+12% desde el mes pasado</p>
+                </div>
+                <div class="icon-bg">
+                    <i class="fas fa-dollar-sign fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tarjeta 2: Usuarios Activos (Originalmente Cyan) -->
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card kpi-cyan-card h-100 p-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <p class="text-muted-light text-uppercase mb-1 small fw-medium">Usuarios Activos</p>
+                    <p class="fs-3 fw-bold mt-1 mb-0">8,429</p>
+                    <p class="text-secondary-light small mt-1">+5% desde la semana pasada</p>
+                </div>
+                <div class="icon-bg">
+                    <i class="fas fa-users fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tarjeta 3: Tasa de Conversión (Originalmente Azul) -->
+    <div class="col-12 col-lg-4">
+        <div class="card kpi-blue-card h-100 p-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <p class="text-muted-light text-uppercase mb-1 small fw-medium">Tasa de Conversión</p>
+                    <p class="fs-3 fw-bold mt-1 mb-0">3.24%</p>
+                    <p class="text-secondary-light small mt-1">+0.8% desde ayer</p>
+                </div>
+                <div class="icon-bg">
+                    <i class="fas fa-chart-line fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
 
-    new Chart(ctx, {
-        type: 'bar',
+<!-- Sección de Gráficos (Donut y Área) -->
+<div class="row g-4">
+    
+    <!-- Gráfico 1: Donut/Progreso -->
+    <div class="col-12 col-lg-6">
+        <div class="card shadow-sm h-100 p-4">
+            <h5 class="fw-semibold text-dark mb-4">Resumen de Rendimiento</h5>
+            <div class="chart-container-wrapper">
+                <canvas id="donutChart"></canvas>
+                <div class="donut-center">
+                    <div class="fs-1 fw-bold text-dark">50%</div>
+                    <div class="text-secondary small">Completado</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráfico 2: Tendencias Mensuales (Área) -->
+    <div class="col-12 col-lg-6">
+        <div class="card shadow-sm h-100 p-4">
+            <h5 class="fw-semibold text-dark mb-4">Tendencias Mensuales</h5>
+            <div class="chart-container-wrapper">
+                <canvas id="areaChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+{% endblock contenido %}
+
+
+{% block extra_js %}
+<script>
+    // Configuración para el Donut Chart (Gráfico de Torta)
+    const donutCtx = document.getElementById('donutChart').getContext('2d');
+    
+    // Función para obtener el gradiente de fondo (necesario ya que Chart.js no soporta gradientes CSS directamente en el color)
+    function getPurpleGradient(chart) {
+        const { ctx, chartArea } = chart;
+        if (!chartArea) return null;
+        
+        const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+        // Colores de kpi-purple-card: #8b5cf6 (púrpura claro) a #a855f7 (púrpura oscuro)
+        gradient.addColorStop(0, '#a855f7'); 
+        gradient.addColorStop(1, '#8b5cf6');
+        return gradient;
+    }
+
+    // Donut Chart Initialization
+    new Chart(donutCtx, {
+        type: 'doughnut',
         data: {
-            labels: meses_etiquetas,
-            datasets: [
-                {
-                    label: 'Ventas Mensuales ($)',
-                    data: datos_ventas,
-                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Gastos Mensuales ($)',
-                    data: datos_gastos,
-                    backgroundColor: 'rgba(255, 99, 132, 0.7)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1
-                }
-            ]
+            datasets: [{
+                data: [50, 50],
+                // El gradiente debe ser creado programáticamente
+                backgroundColor: (context) => [
+                    getPurpleGradient(context.chart) || '#8b5cf6', // Usar color plano si el gradiente falla
+                    '#e9ecef' // Color de fondo claro (similar a #f3f4f6 o bg-gray-200 de Bootstrap)
+                ],
+                borderWidth: 0,
+                cutout: '70%'
+            }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: false // Desactivar tooltips para mantener la estética del centro
+                }
+            },
+            elements: {
+                arc: {
+                    borderRadius: 5, // Pequeño toque de redondeo
+                }
+            }
+        }
+    });
+
+    // Configuración para el Area Chart (Gráfico de Línea con Relleno)
+    const areaCtx = document.getElementById('areaChart').getContext('2d');
+    
+    // Función para obtener el gradiente de fondo para el área (opcional, pero mejora el aspecto)
+    function getCyanAreaGradient(chart) {
+        const { ctx, chartArea } = chart;
+        if (!chartArea) return null;
+        
+        const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+        gradient.addColorStop(0, 'rgba(6, 182, 212, 0.4)'); // Cyan más fuerte
+        gradient.addColorStop(1, 'rgba(6, 182, 212, 0)'); // Transparente
+        return gradient;
+    }
+
+    new Chart(areaCtx, {
+        type: 'line',
+        data: {
+            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'], // Etiquetas de ejemplo
+            datasets: [{
+                label: 'Tendencia',
+                data: [30, 45, 35, 60, 42, 75],
+                borderColor: '#06b6d4', // Color Cyan
+                // Usamos una función para crear el gradiente de área
+                backgroundColor: (context) => getCyanAreaGradient(context.chart), 
+                fill: true,
+                tension: 0.4, // Suaviza la línea
+                pointBackgroundColor: '#06b6d4',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
             scales: {
-                y: { beginAtZero: true }
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#dee2e6' // Color de línea de cuadrícula de Bootstrap
+                    },
+                    ticks: {
+                        color: '#6c757d' // Color de texto de Bootstrap (secundario)
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#6c757d'
+                    }
+                }
             }
         }
     });
 </script>
-{% endblock %}
+{% endblock extra_js %}

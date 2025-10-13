@@ -78,30 +78,21 @@ def lista_ordenes(request):
     return render(request, 'app/lista_ordenes.html', {'ordenes': ordenes})
 
 def crear_orden(request):
-    """
-    Crea una nueva orden de compra.
-    Valida el stock del producto antes de guardar.
-    """
     if request.method == 'POST':
         form = OrdenCompraForm(request.POST)
         if form.is_valid():
             orden = form.save(commit=False)
-            
-            # Validar y disminuir el stock del producto
             producto = orden.producto
-            cantidad = orden.cantidad
-            
-            if producto.stock >= cantidad:
-                orden.total = orden.cantidad * orden.precio_unitario
-                orden.save()
-                producto.disminuir_stock(cantidad)
-                return redirect('lista_ordenes')
+            if producto.disminuir_stock(orden.cantidad):
+                orden.save()  # Esto guardará la orden en la base de datos
+                return redirect('detalle_orden', orden_id=orden.pk)
             else:
                 form.add_error('cantidad', 'No hay suficiente stock para este producto.')
     else:
         form = OrdenCompraForm()
     
-    return render(request, 'app/crear_orden.html', {'form': form})
+    context = {'orden_form': form}  # Se debe cambiar 'form' por 'orden_form' para que coincida con la plantilla
+    return render(request, 'app/crear_orden.html', context)
 
 def detalle_orden(request, orden_id):
     """

@@ -53,6 +53,7 @@ class Trabajador(models.Model):
     telefono = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     tipo_proyecto = models.CharField(max_length=20, choices=TIPO_PROYECTO, default='CONSTRUCTORA')
+    cargo = models.CharField(max_length=100, blank=True, null=True)
     
 
     def __str__(self):

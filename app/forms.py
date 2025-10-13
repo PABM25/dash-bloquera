@@ -29,7 +29,8 @@ class OrdenCompraForm(forms.ModelForm):
 class TrabajadorForm(forms.ModelForm):
     class Meta:
         model = Trabajador
-        fields = ['nombre', 'rut', 'direccion', 'telefono', 'email', 'tipo_proyecto']
+        # AÑADIR 'cargo' A LA LISTA DE CAMPOS
+        fields = ['nombre', 'rut', 'direccion', 'telefono', 'email', 'tipo_proyecto', 'cargo'] 
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'rut': forms.TextInput(attrs={'class': 'form-control'}),
@@ -37,6 +38,7 @@ class TrabajadorForm(forms.ModelForm):
             'telefono': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'tipo_proyecto': forms.Select(attrs={'class': 'form-control'}),
+            'cargo': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
 

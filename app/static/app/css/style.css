@@ -1,65 +1,345 @@
-/* Estilos personalizados para la barra lateral */
+/*  Estilos personalizados para el dashboard de Django
+ segúrate de que este archivo esté en app/static/app/css/style.css
+ */
+
+/* 1. Asegurar que HTML y BODY ocupen toda la ventana */
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden; /* **CLAVE**: Previene el scroll vertical global */
+}
+
+/* 2. El wrapper debe ocupar el 100% de la altura del viewport */
 #wrapper {
-  display: flex;
-  min-height: 100vh;
+    height: 100vh; 
 }
 
+/* Estilos de la plantilla base (ajustados para el sidebar) */
 #sidebar-wrapper {
-  min-width: 250px;
-  margin-left: -250px;
-  transition: margin 0.25s ease-out;
-  background-color: #f8f9fa; /* Color de fondo claro */
-  border-right: 1px solid #dee2e6; /* Borde para el separador */
+    min-height: 100vh;
+    margin-left: -15rem;
+    transition: margin 0.25s ease-out;
+    background: #FFFFFF; /* fondo blanco limpio */
+    color: #0D0D0D; /* texto principal oscuro */
+    border-right: 1px solid #E5E5E5 /* texto neutro sobre fondo oscuro */
 }
 
-#wrapper.toggled #sidebar-wrapper {
-  margin-left: 0;
+#sidebar-wrapper .list-group-item {
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+
+    padding: 0.75rem 1.5rem; 
+    
+    background-color: transparent;
+    color: #0D0D0D; 
+    border: none;
+    transition: all 0.3s ease-in-out;
+    border-radius: 0.5rem;
+    margin-bottom: 0.25rem;
+    
+    
+    display: flex; 
+    align-items: center; 
+}
+
+#sidebar-wrapper .list-group-item:hover {
+   background: #F2A81D; /* color de acento de tu paleta */
+    color: #FFFFFF; 
+    font-weight: 500;
+}
+
+#sidebar-wrapper .list-group-item.active {
+    background: #BF2642; /* color principal de tu paleta */
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+#sidebar-wrapper .list-group-item i {
+    /* Fuerza un ancho fijo al ícono si aún se mueve, pero con me-2 ya debería ser suficiente */
+    /* min-width: 1.5rem; */ 
+    text-align: center;
+}
+
+.toggled #wrapper {
+    margin-left: 0;
 }
 
 #page-content-wrapper {
-  min-width: 100vw;
-  width: 100%;
+    min-width: 100vw;
 }
 
-#wrapper.toggled #page-content-wrapper {
-  margin-left: -250px;
-}
-
-.sidebar-heading {
-  padding: 1.5rem 1.25rem;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #333;
-}
-
-.list-group-item.list-group-item-action {
-  color: #444;
-  padding: 10px 15px;
-  transition: background-color 0.2s ease-in-out;
-  border: none;
-  border-radius: 0;
-}
-
-.list-group-item.list-group-item-action:hover {
-  background-color: #e9ecef;
-}
-
-/* Media queries para hacer el diseño responsivo */
-@media (min-width: 768px) {
-  #sidebar-wrapper {
+.toggled #sidebar-wrapper {
     margin-left: 0;
-  }
+}
 
-  #page-content-wrapper {
+@media (min-width: 768px) {
+    #sidebar-wrapper {
+        margin-left: 0;
+    }
+    #page-content-wrapper {
+        min-width: 0;
+        width: 100%;
+    }
+    .toggled #sidebar-wrapper {
+        margin-left: -15rem;
+    }
+}
+
+
+#sidebar-wrapper .logo {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 24px;
+    color: #BF2642; /* color principal */
+    margin-bottom: 40px;
+}
+
+#page-content-wrapper {
+    /* ANTES: min-width: 100vw; */
+    /* AHORA: */
+    height: 100%; /* Ocupa el 100% de la altura del #wrapper */
     min-width: 0;
     width: 100%;
-  }
+    /* Permitir scroll sólo en dispositivos móviles si el sidebar está oculto */
+    overflow-y: auto; 
+}
 
-  #wrapper.toggled #sidebar-wrapper {
-    margin-left: -250px;
-  }
 
-  #wrapper.toggled #page-content-wrapper {
-    margin-left: 0;
-  }
+/* Estilos de las tarjetas KPI adaptados del código original */
+
+/* Gradiente Púrpura (KPI 1: Total Revenue) */
+.kpi-purple-card {
+    background: linear-gradient(135deg, #BF2642 0%, #F2A81D 100%);
+    color: white;
+    border: none;
+    border-radius: 1rem; /* rounded-2xl */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* card-shadow */
+}
+.kpi-purple-card .text-muted-light {
+    color: rgba(255, 255, 255, 0.7); /* Similar a text-purple-100 */
+}
+.kpi-purple-card .text-secondary-light {
+    color: rgba(255, 255, 255, 0.5); /* Similar a text-purple-200 */
+}
+.kpi-purple-card .icon-bg {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+}
+
+/* Gradiente Cyan (KPI 2: Active Users) */
+.kpi-cyan-card {
+    background: linear-gradient(90deg, #F2A81D 0%, #F2780C 100%);
+    color: white;
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+.kpi-cyan-card .text-muted-light {
+    color: rgba(255, 255, 255, 0.7); /* Similar a text-cyan-100 */
+}
+.kpi-cyan-card .text-secondary-light {
+    color: rgba(255, 255, 255, 0.5); /* Similar a text-cyan-200 */
+}
+.kpi-cyan-card .icon-bg {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+}
+
+/* Gradiente Azul (KPI 3: Conversion Rate) */
+.kpi-blue-card {
+    background: linear-gradient(135deg, #0D0D0D 0%, #BF2642 100%);
+    color: white;
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+.kpi-blue-card .text-muted-light {
+    color: rgba(255, 255, 255, 0.7); /* Similar a text-blue-100 */
+}
+.kpi-blue-card .text-secondary-light {
+    color: rgba(255, 255, 255, 0.5); /* Similar a text-blue-200 */
+}
+.kpi-blue-card .icon-bg {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+}
+
+/* Estilos específicos para los gráficos */
+.chart-container-wrapper {
+    position: relative;
+    height: 300px;
+}
+.donut-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+/* Ajustes generales */
+body {
+    background-color: #f8f9fa; /* Similar a bg-gray-50 */
+}
+
+/* Sobrescribir el color de fondo en la tarjeta de gráficos si es necesario */
+.card.shadow-sm {
+    border-radius: 1rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,.08);
+}
+
+
+
+/* ==================================== */
+/* 4. Estilos para Formularios (Crear Orden de Compra) */
+/* ==================================== */
+
+.card.shadow-sm {
+    background-color: #FFFFFF; /* Tarjeta de contenido principal blanca */
+    border-radius: 1rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,.08);
+}
+
+/* Cabecera del Formulario: Minimalista, usa el color principal de la marca */
+.card-header-branding {
+    /* Color sólido en lugar de degradado */
+    background-color: #BF2642;
+    color: #FFFFFF; 
+    font-weight: 600;
+    padding: 1rem 1.5rem;
+    border-top-left-radius: 1rem !important; 
+    border-top-right-radius: 1rem !important;
+    border-bottom: none; 
+}
+
+/* Botón Principal: Sólido, color principal */
+.btn-principal {
+    background-color: #BF2642; 
+    border-color: #BF2642;
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+.btn-principal:hover {
+    /* Hover más sutil, ligeramente más oscuro */
+    background-color: #A62139; 
+    border-color: #A62139;
+    color: #FFFFFF; 
+    box-shadow: 0 4px 8px rgba(191, 38, 66, 0.3);
+}
+
+/* Foco en los inputs */
+.form-control:focus,
+.custom-select:focus {
+    border-color: #BF2642; 
+    box-shadow: 0 0 0 0.2rem rgba(191, 38, 66, 0.25); 
+}
+
+/* ==================================== */
+/* 5. Estilos para Vista Previa de Ticket */
+/* ==================================== */
+
+#preview-ticket {
+    /* Fondo del ticket blanco para simular papel, borde suave */
+    border: 1px solid #E5E5E5;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    background-color: #FFFFFF;
+}
+
+#preview-ticket .productos th, 
+#preview-ticket .productos td {
+    /* Eliminar bordes para un look limpio */
+    border: none !important;
+    padding: 0.3rem 0; /* padding vertical mínimo */
+}
+
+#preview-ticket .productos thead th {
+    /* Separador sutil en la cabecera */
+    border-bottom: 1px solid #BF2642 !important;
+}
+
+#preview-ticket hr {
+    /* Usar el color principal para las líneas de separación */
+    border-top: 1px dashed #BF2642; 
+    opacity: 0.5;
+}
+
+/* ==================================== */
+/* 7. Estilos para la Tarjeta de Vista Previa del Trabajador */
+/* ==================================== */
+
+#preview-card {
+    /* Base: Fondo blanco, bordes suaves y sombra sutil */
+    background-color: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilo para el ícono de perfil grande (placeholder) */
+#preview-card .fa-user-circle {
+    /* Color neutro para el ícono placeholder, pero notable */
+    color: #CCCCCC !important; 
+}
+
+/* Estilo para el nombre principal */
+#preview-card h4 {
+    color: #0D0D0D; /* Texto oscuro principal */
+    font-size: 1.5rem;
+    border-bottom: 2px solid #F2E1C2; /* Línea de separación sutil usando el color Duna */
+    padding-bottom: 0.5rem;
+}
+
+/* Estilos de las líneas de información (RUT, Cargo, etc.) */
+#preview-card .info-line {
+    font-size: 0.95rem;
+    color: #0D0D0D;
+}
+
+/* Íconos de las líneas de información */
+#preview-card .info-line i {
+    /* Acento de color de marca para los íconos de detalle */
+    color: #BF2642 !important;
+}
+
+/* Separador horizontal (HR) */
+#preview-card hr {
+    /* Línea limpia y sutil */
+    border-top: 1px solid #E5E5E5; 
+    opacity: 0.7;
+}
+
+/* Footer de la tarjeta */
+#preview-card .text-muted {
+    color: #999999 !important; /* Gris claro */
+}
+
+/* ==================================================== */
+/* 8. Ajuste Fino para Navbar y Contenido (Fullscreen) */
+/* ==================================================== */
+
+/* Altura Fija de la Barra de Navegación (para cálculo) */
+/* Usamos la clase existente .navbar.shadow-sm */
+.navbar.shadow-sm {
+    height: 60px; /* Definimos la altura de la barra. ¡Asegúrate que 60px es correcto! */
+    flex-shrink: 0; /* Evita que la barra se encoja */
+}
+
+
+/* Altura del contenedor del contenido (#contenido) */
+#contenido {
+    /* * Altura total de la ventana (100vh) 
+     * MENOS la altura de la barra de navegación superior (60px)
+     * MENOS el padding vertical (py-4) del container-fluid (aprox. 1.5rem arriba + 1.5rem abajo = 48px)
+     */
+    height: calc(100vh - 60px - 48px); 
+    overflow-y: auto; /* **CLAVE**: Permite el scroll ÚNICAMENTE dentro de este DIV si el contenido es muy largo */
+    overflow-x: hidden; 
 }

@@ -1,28 +1,157 @@
-<!-- This code snippet is a template written in Django template language. Let me explain what it does: -->
 {% extends 'app/base.html' %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block contenido %}
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-lg-6 col-md-12 mb-4">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header card-header-branding">
                     <h2 class="mb-0">Crear Orden de Compra</h2>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form id="orden-form" method="post">
                         {% csrf_token %}
                         {{ orden_form|crispy }}
                         <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">Guardar Orden</button>
+                            <button type="submit" class="btn btn-principal btn-lg">Guardar Orden</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-md-12">
+            <h5 class="text-center fw-bold mb-3" style="color: #BF2642;">Vista Previa de Comprobante</h5>
+            <div id="preview-ticket" class="card shadow-sm p-4 mx-auto" style="max-width: 400px; min-height: 500px; font-family: 'Courier New', monospace;">
+                
+                <div class="logo-container d-flex justify-content-between align-items-center mb-3">
+                    <div class="logo">
+                        <img src="{% static 'app/img/logo.png' %}" alt="Logo" class="logo-img" style="width: auto; height: 50px;">
+                    </div>
+                    <div class="empresa text-start small">
+                        <strong>CONSTRUCCIONES V & G LIZ CASTILLO GARCIA SPA</strong><br>
+                        RUT: 77.858.577-4<br>
+                        Dirección: Vilaco 301, Toconao<br>
+                        Teléfono: +56 9 1234 5678
+                    </div>
+                </div>
+
+                <hr class="my-2">
+
+                <div class="orden-info text-start small mb-3">
+                    <strong>Orden de Compra #<span id="preview-id">______</span></strong><br>
+                    Cliente: <span id="preview-cliente">N/A</span><br>
+                    Fecha: <span id="preview-fecha">{% now "d-m-Y H:i" %}</span><br>
+                    Dirección: <span id="preview-direccion">N/A</span>
+                </div>
+
+                <hr class="my-2">
+
+                <strong class="text-start d-block mb-1">Detalle</strong>
+                <table class="productos table table-sm small">
+                    <thead>
+                        <tr>
+                            <th class="text-start">Producto</th>
+                            <th style="width: 20%;">Cant</th>
+                            <th style="width: 30%;">P. Unitario</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-start" id="preview-producto">N/A</td>
+                            <td id="preview-cantidad">0</td>
+                            <td id="preview-precio-unitario">$0</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <hr class="my-2">
+
+                <div class="total text-end fw-bold">
+                    <small>Total a Pagar:</small> <span class="fs-6" id="preview-total">$0</span>
+                </div>
+
+                <hr class="my-2">
+
+                <div class="gracias small mt-3 text-center">
+                    ¡Gracias por su compra!<br>
+                    Esperamos atenderle pronto.
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-{% endblock %}
+{% endblock contenido %}
+
+{% block extra_js %}
+<script>
+    // Usamos Vanilla JS para actualizar la vista previa
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mapeo de IDs de inputs del formulario a IDs de la vista previa
+        const fieldMap = {
+            // Revisa si Crispy Forms usa estos IDs en tu caso. Si no, ajusta los de la izquierda.
+            'id_cliente': 'preview-cliente',
+            'id_direccion': 'preview-direccion',
+            'id_producto': 'preview-producto',
+            'id_cantidad': 'preview-cantidad',
+            'id_precio_unitario': 'preview-precio-unitario'
+            // 'id_numero_venta': 'preview-id' // Usamos ID para el número de venta, pero la ID de orden es diferente
+        };
+
+        const form = document.getElementById('orden-form');
+        const previewTotal = document.getElementById('preview-total');
+        const inputCantidad = document.getElementById('id_cantidad');
+        const inputPrecio = document.getElementById('id_precio_unitario');
+
+        // Función para formatear números como moneda (opcional, pero útil)
+        const formatCurrency = (number) => {
+            return '$' + new Intl.NumberFormat('es-CL').format(number);
+        };
+
+        // Función principal de actualización y cálculo
+        const updatePreview = () => {
+            // 1. Actualizar campos de texto
+            for (const inputId in fieldMap) {
+                const inputElement = document.getElementById(inputId);
+                const previewElement = document.getElementById(fieldMap[inputId]);
+                
+                if (inputElement && previewElement) {
+                    // Para inputs estándar:
+                    let value = inputElement.value;
+
+                    // Para selects (como Producto), obtener el texto visible en lugar del valor
+                    if (inputElement.tagName === 'SELECT' && inputElement.selectedIndex !== -1) {
+                        value = inputElement.options[inputElement.selectedIndex].text;
+                    }
+                    
+                    // Si es precio o cantidad, lo formateamos aquí, antes de actualizar
+                    if (inputId === 'id_precio_unitario') {
+                        previewElement.textContent = formatCurrency(parseFloat(value) || 0);
+                    } else if (inputId === 'id_cantidad') {
+                        previewElement.textContent = parseFloat(value) || 0;
+                    } else {
+                        previewElement.textContent = value || 'N/A';
+                    }
+                }
+            }
+
+            // 2. Calcular y actualizar el Total
+            const cantidad = parseFloat(inputCantidad ? inputCantidad.value : 0) || 0;
+            const precio = parseFloat(inputPrecio ? inputPrecio.value : 0) || 0;
+            const total = cantidad * precio;
+
+            previewTotal.textContent = formatCurrency(total);
+        };
+
+        // 3. Listener: Escuchar cambios en cualquier input del formulario
+        form.addEventListener('input', updatePreview);
+
+        // Inicializar la vista previa al cargar la página (por si hay valores iniciales)
+        updatePreview();
+    });
+</script>
+{% endblock extra_js %}

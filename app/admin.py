@@ -16,7 +16,7 @@ class OrdenCompraAdmin(admin.ModelAdmin):
 # Configuración del panel de administración para el modelo Trabajador
 @admin.register(Trabajador)
 class TrabajadorAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'rut', 'telefono', 'email', 'tipo_proyecto')
+    list_display = ('nombre', 'rut', 'telefono', 'email', 'tipo_proyecto', 'cargo')
     search_fields = ('nombre', 'rut')
 
 # Configuración del panel de administración para el modelo Asistencia
