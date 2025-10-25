@@ -39,7 +39,7 @@
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <p class="text-muted-light text-uppercase mb-1 small fw-medium">Ingresos Totales</p>
-                    <p class="fs-3 fw-bold mt-1 mb-0">$124,500</p>
+                    <p class="fs-3 fw-bold mt-1 mb-0">$ {{ total_ventas|floatformat:0 }}</p>
                     <p class="text-secondary-light small mt-1">+12% desde el mes pasado</p>
                 </div>
                 <div class="icon-bg">
@@ -54,8 +54,8 @@
         <div class="card kpi-cyan-card h-100 p-4">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <p class="text-muted-light text-uppercase mb-1 small fw-medium">Usuarios Activos</p>
-                    <p class="fs-3 fw-bold mt-1 mb-0">8,429</p>
+                    <p class="text-muted-light text-uppercase mb-1 small fw-medium">Gastos</p>
+                    <p class="fs-3 fw-bold mt-1 mb-0">$ {{ total_gastos|floatformat:0 }}</p>
                     <p class="text-secondary-light small mt-1">+5% desde la semana pasada</p>
                 </div>
                 <div class="icon-bg">
@@ -70,8 +70,8 @@
         <div class="card kpi-blue-card h-100 p-4">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <p class="text-muted-light text-uppercase mb-1 small fw-medium">Tasa de Conversión</p>
-                    <p class="fs-3 fw-bold mt-1 mb-0">3.24%</p>
+                    <p class="text-muted-light text-uppercase mb-1 small fw-medium">Asistencias</p>
+                    <p class="fs-3 fw-bold mt-1 mb-0">{{ asistencias_del_mes }}</p>
                     <p class="text-secondary-light small mt-1">+0.8% desde ayer</p>
                 </div>
                 <div class="icon-bg">

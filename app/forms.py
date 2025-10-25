@@ -15,14 +15,16 @@ class ProductoForm(forms.ModelForm):
 class OrdenCompraForm(forms.ModelForm):
     class Meta:
         model = OrdenCompra
-        fields = ['numero_venta', 'cliente', 'direccion', 'producto', 'cantidad', 'precio_unitario']
+        fields = ['numero_venta', 'cliente', 'direccion', 'producto', 'cantidad', 'precio_unitario', 'rut']
         widgets = {
             'numero_venta': forms.TextInput(attrs={'class': 'form-control'}),
             'cliente': forms.TextInput(attrs={'class': 'form-control'}),
-            'direccion': forms.Textarea(attrs={'class': 'form-control'}),
+            'rut': forms.TextInput(attrs={'class': 'form-control'}),
+            'direccion': forms.TextInput(attrs={'class': 'form-control'}),
             'producto': forms.Select(attrs={'class': 'form-control'}),
             'cantidad': forms.NumberInput(attrs={'class': 'form-control'}),
             'precio_unitario': forms.NumberInput(attrs={'class': 'form-control'}),
+            
         }
 
 

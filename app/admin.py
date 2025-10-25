@@ -5,7 +5,7 @@ from .models import OrdenCompra, Trabajador, Asistencia, Producto, Gasto
 @admin.register(OrdenCompra)
 class OrdenCompraAdmin(admin.ModelAdmin):
     # Campos a mostrar en la lista del admin
-    list_display = ('numero_venta', 'cliente', 'fecha', 'producto', 'cantidad', 'precio_unitario', 'total')
+    list_display = ('numero_venta', 'cliente', 'fecha', 'producto', 'cantidad', 'precio_unitario', 'total', 'rut')
 
     # Campos por los que se puede buscar
     search_fields = ('numero_venta', 'cliente', 'producto__nombre')  # Permite buscar por el nombre del producto

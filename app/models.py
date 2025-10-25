@@ -27,6 +27,7 @@ class OrdenCompra(models.Model):
     numero_venta = models.CharField(max_length=10, unique=True)
     fecha = models.DateTimeField(auto_now_add=True)
     cliente = models.CharField(max_length=100)
+    rut = models.CharField(max_length=12, unique=True, blank=True, null=True)
     direccion = models.TextField(blank=True, null=True)
     
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
