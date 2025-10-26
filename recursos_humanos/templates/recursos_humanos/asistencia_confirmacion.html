@@ -1,0 +1,27 @@
+{% extends 'core/base.html' %}
+{% block contenido %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card text-center shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Resultado de la Asistencia</h2>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    {% if not messages %}
+                        <h4 class="text-success">Asistencia registrada.</h4>
+                    {% endif %}
+                    
+                    <a href="{% url 'recursos_humanos:asistencia_manual' %}" class="btn btn-primary mt-3">Registrar otra asistencia</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
