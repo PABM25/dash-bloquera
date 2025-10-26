@@ -15,7 +15,8 @@
                         {{ form|crispy }}
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary btn-lg">Guardar</button>
-                            <a href="{% url 'inventario:inventario' %}" class="btn btn-secondary btn-lg">Cancelar</a>
+                             {# Corregido: 'inventario:inventario' -> 'inventario:lista' #}
+                            <a href="{% url 'inventario:lista' %}" class="btn btn-secondary btn-lg">Cancelar</a>
                         </div>
                     </form>
                 </div>

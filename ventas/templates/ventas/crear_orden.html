@@ -190,7 +190,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         try {
-            // --- CORREGIDO: Uso correcto de {% url %} para la API ---
             // Usamos un ID temporal (0) que reemplazaremos
             const urlTemplate = "{% url 'inventario:api_get_stock' 0 %}";
             const url = urlTemplate.replace('0', productoId);
