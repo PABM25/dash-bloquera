@@ -24,25 +24,35 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-^5o5g+pxuhyryu*fk*sma3s6=28%j3&t^&$l_9jk*%70y$t$ru'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = [http://EonCipher.pythonanywhere.com]
+ALLOWED_HOSTS = []
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'app',
+    # Mis Apps (usar nombres de clase AppConfig si existen)
+    'core', # O 'core.apps.CoreConfig'
+    'inventario',
+    'recursos_humanos',
+    'ventas',
+    'finanzas',
+
+    # Django Apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Third Party Apps
     'crispy_forms',
     'crispy_bootstrap5',
     'django.contrib.humanize',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -59,8 +69,11 @@ ROOT_URLCONF = 'bloquera.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'app/templates'],  # Esto es clave, asegura que Django pueda encontrar las plantillas en app/templates
-        'APP_DIRS': True,
+        # SI MOVES LAS PLANTILLAS a /templates/ en la raíz:
+        # 'DIRS': [BASE_DIR / 'templates'],
+        # SI LAS DEJAS DENTRO DE CADA APP (e.g., core/templates/core/):
+        'DIRS': [], # Dejar vacío si usas APP_DIRS
+        'APP_DIRS': True, # Django buscará en app_name/templates/
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -120,23 +133,28 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 
+# SI CENTRALIZAS ESTÁTICOS en /static/ en la raíz:
+# STATICFILES_DIRS = [BASE_DIR / "static"]
+# SI LOS DEJAS EN app_name/static/ (recomendado con APP_DIRS=True en TEMPLATES):
 STATICFILES_DIRS = [
-    BASE_DIR / "app" / "static",
+    # Puedes mantener tu configuración original si moviste 'app/static/app/' a 'core/static/core/'
+     BASE_DIR / "core" / "static", # Asumiendo que moviste los estáticos generales a core
 ]
+# Si usas `collectstatic`, define STATIC_ROOT
+# STATIC_ROOT = BASE_DIR / 'staticfiles_collected'
+
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-# --- AÑADIR ESTO AL FINAL ---
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'login'
+# --- URLs de Login/Logout (Redirigen a 'core' ahora) ---
+LOGIN_URL = 'core:login'
+LOGIN_REDIRECT_URL = 'core:home'
+LOGOUT_REDIRECT_URL = 'core:login'
 # --- FIN DE LO AÑADIDO ---
