@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Orden {{ orden.numero_venta|default:orden.id }}</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: white; }
+        .ticket {
+            width: 302px; /* Aprox 80mm a 96dpi */
+            font-size: 11px;
+            text-align: center;
+            padding: 10px;
+            margin: 0;
+            background: white;
+            border: 1px solid #ddd; /* Borde leve para delimitar en JPG */
+            box-sizing: border-box;
+        }
+        .logo-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .logo-img { width: auto; height: 50px; }
+        .empresa { text-align: left; font-size: 9px; line-height: 1.2; }
+        .empresa strong { font-size: 9px; font-weight: bold; }
+        .orden-info { margin-bottom: 8px; font-size: 10px; text-align: left; }
+        hr { border: none; border-top: 1px dashed #555; margin: 4px 0; }
+        strong { font-weight: bold; }
+        /* Tabla */
+        table.productos { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 4px; }
+        th, td { border: 1px solid black; padding: 2px; text-align: center; }
+        th { font-weight: bold; background-color: #f0f0f0; }
+        table.productos td:first-child, table.productos th:first-child { text-align: left; }
+        /* Total */
+        .total { margin-top: 5px; text-align: right; }
+        .total strong { font-size: 12px; }
+        .gracias { font-size: 9px; margin-top: 8px; }
+        /* Ocultar botón de imprimir si existiera */
+        .print-btn { display: none; }
+    </style>
+</head>
+<body>
+    <div class="ticket">
+        <div class="logo-container">
+            <div class="logo">
+                 <img src="http://{{ request.get_host }}{% static 'app/img/logo.png' %}" alt="Logo" class="logo-img">
+            </div>
+            <div class="empresa">
+                <strong>CONSTRUCCIONES V & G LIZ CASTILLO GARCIA SPA</strong><br>
+                RUT: 77.858.577-4<br>
+                Dirección: Vilaco 301, Toconao<br>
+                Teléfono: +56 9 52341652
+            </div>
+        </div>
+        <hr>
+        <div class="orden-info">
+            <strong>Orden de Compra #{{ orden.numero_venta|default:orden.id }}</strong><br>
+            Cliente: {{ orden.cliente }}<br>
+            Rut: {{ orden.rut|default:"N/A" }}<br>
+            Fecha: {{ orden.fecha|date:"d-m-Y H:i" }}<br>
+            Dirección: {{ orden.direccion|default:"N/A" }}
+        </div>
+        <hr>
+        <strong style="display: block; text-align: left; font-size: 11px;">Detalle</strong>
+        <table class="productos">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cant</th>
+                    <th>P. Unit.</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detalle in orden.detalles.all %}
+                <tr>
+                    <td>{{ detalle.producto.nombre }}</td>
+                    <td>{{ detalle.cantidad }}</td>
+                    <td>${{ detalle.precio_unitario|floatformat:0 }}</td>
+                    <td>${{ detalle.total_linea|floatformat:0 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" style="text-align: center;">Esta orden no tiene productos.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <hr>
+        <div class="total">
+            <strong>Total a Pagar: ${{ orden.total|floatformat:0 }}</strong>
+        </div>
+        <hr>
+        <div class="gracias">
+            ¡Gracias por su compra!<br>
+            Esperamos atenderle pronto.
+        </div>
+    </div>
+</body>
+</html>

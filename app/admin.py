@@ -1,17 +1,45 @@
 from django.contrib import admin
-from .models import OrdenCompra, Trabajador, Asistencia, Producto, Gasto
+# Asegúrate de importar DetalleOrden
+from .models import OrdenCompra, Trabajador, Asistencia, Producto, Gasto, DetalleOrden
 
-# Configuración del panel de administración para el modelo OrdenCompra
+# --- NUEVO ---
+# Esto define cómo se mostrarán los productos DENTRO de la orden de compra
+class DetalleOrdenInline(admin.TabularInline):
+    model = DetalleOrden
+    extra = 1  # Cuántas filas vacías mostrar
+    fields = ('producto', 'cantidad', 'precio_unitario')
+    readonly_fields = () # Puedes añadir campos aquí si no quieres que se editen
+
+# Configuración del panel de administración para el modelo OrdenCompra (ACTUALIZADO)
 @admin.register(OrdenCompra)
 class OrdenCompraAdmin(admin.ModelAdmin):
-    # Campos a mostrar en la lista del admin
-    list_display = ('numero_venta', 'cliente', 'fecha', 'producto', 'cantidad', 'precio_unitario', 'total', 'rut')
+    # Campos a mostrar en la lista del admin (Quitamos los campos viejos)
+    list_display = ('numero_venta', 'cliente', 'fecha', 'total', 'rut')
 
-    # Campos por los que se puede buscar
-    search_fields = ('numero_venta', 'cliente', 'producto__nombre')  # Permite buscar por el nombre del producto
+    # Campos por los que se puede buscar (Quitamos producto__nombre)
+    search_fields = ('numero_venta', 'cliente', 'rut')
     
-    # Campos por los que se puede filtrar
-    list_filter = ('fecha', 'producto')  # Filtro por fecha y producto
+    # Campos por los que se puede filtrar (Quitamos producto)
+    list_filter = ('fecha',)
+    
+    # --- NUEVO ---
+    # Añadimos los detalles (productos) para que se editen en línea
+    inlines = [DetalleOrdenInline]
+
+    # Para que el total se recalcule (Opcional, pero recomendado)
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        total_orden = 0
+        for instance in instances:
+            if not instance._state.adding and instance.pk is None: # Omitir formularios vacíos
+                continue
+            instance.save()
+            total_orden += instance.total_linea
+        
+        form.instance.total = total_orden
+        form.instance.save()
+        formset.save_m2m()
+
 
 # Configuración del panel de administración para el modelo Trabajador
 @admin.register(Trabajador)

@@ -1,3 +1,4 @@
+# app/models.py
 from django.db import models
 from datetime import date
 
@@ -24,24 +25,45 @@ class Producto(models.Model):
         verbose_name_plural = "Productos"
 
 class OrdenCompra(models.Model):
-    numero_venta = models.CharField(max_length=10, unique=True)
+    # Convertimos numero_venta para que se genere automáticamente
+    numero_venta = models.CharField(max_length=15, unique=True, editable=False, blank=True)
     fecha = models.DateTimeField(auto_now_add=True)
     cliente = models.CharField(max_length=100)
-    rut = models.CharField(max_length=12, unique=True, blank=True, null=True)
+    rut = models.CharField(max_length=12, blank=True, null=True) # Quitamos unique=True si puede repetirse
     direccion = models.TextField(blank=True, null=True)
-    
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    cantidad = models.PositiveIntegerField()
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
-    
-    total = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
-    
-    def save(self, *args, **kwargs):
-        self.total = self.cantidad * self.precio_unitario
-        super().save(*args, **kwargs)
-        
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
     class Meta:
         verbose_name_plural = "Órdenes de Compra"
+        ordering = ['-fecha'] # Opcional: Ordenar por defecto
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None # Guardamos si es una instancia nueva ANTES de guardar
+
+        # Primero guardamos para obtener un ID si es nuevo
+        super().save(*args, **kwargs)
+
+        if is_new and not self.numero_venta: # Generar solo si es nuevo Y no tiene número aún
+            # Formato: OC-año-ID (ej: OC-2025-0001)
+            self.numero_venta = f"OC-{self.fecha.year}-{self.id:04d}"
+            # Volvemos a guardar SOLO este campo para evitar bucles
+            super().save(update_fields=['numero_venta'])
+
+    def __str__(self):
+        return self.numero_venta or f"Orden #{self.id}"
+
+class DetalleOrden(models.Model):
+    orden = models.ForeignKey(OrdenCompra, related_name='detalles', on_delete=models.CASCADE)
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    cantidad = models.PositiveIntegerField(default=1)
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.cantidad} x {self.producto.nombre}"
+    
+    @property
+    def total_linea(self):
+        return self.cantidad * self.precio_unitario
 
 class Trabajador(models.Model):
     TIPO_PROYECTO = [
@@ -56,7 +78,6 @@ class Trabajador(models.Model):
     tipo_proyecto = models.CharField(max_length=20, choices=TIPO_PROYECTO, default='CONSTRUCTORA')
     cargo = models.CharField(max_length=100, blank=True, null=True)
     
-
     def __str__(self):
         return self.nombre
         
@@ -77,7 +98,7 @@ class Asistencia(models.Model):
 
     class Meta:
         verbose_name_plural = "Asistencias"
-        unique_together = ('trabajador', 'fecha', 'tipo_proyecto') # Evita duplicados para el mismo trabajador, fecha y proyecto
+        unique_together = ('trabajador', 'fecha', 'tipo_proyecto')
 
 class Gasto(models.Model):
     CATEGORIAS_GASTO = [
@@ -103,5 +124,3 @@ class Gasto(models.Model):
 
     class Meta:
         verbose_name_plural = "Gastos"
-
-

@@ -1,16 +1,24 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from .models import *
 from .forms import *
-from reportlab.pdfgen import canvas
-import qrcode
 from io import BytesIO
-from datetime import datetime, timedelta, date
+from datetime import date
 from django.db.models import Sum, F, Count
 from django.db.models.functions import ExtractMonth, ExtractYear
 import json
-from django.core.serializers.json import DjangoJSONEncoder
+from django.db import transaction
+from django.contrib import messages
+from django.template.loader import render_to_string
+import imgkit
+import pdfkit # Añadido
+from django.conf import settings
+from docx import Document
+from docx.shared import Inches, Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
+# --- Vistas Home, Reporte, Lista Ordenes, Crear Orden ---
+# (Sin cambios respecto a la versión anterior, puedes mantenerlas como están)
 def home(request):
     """
     Renderiza la página de inicio.
@@ -20,35 +28,27 @@ def home(request):
     hoy = date.today()
     primer_dia_mes = hoy.replace(day=1)
 
-    # Contar la asistencia del mes
     asistencia_del_mes = Asistencia.objects.filter(fecha__gte=primer_dia_mes).count()
-
-    # Obtener los datos para los gráficos de ventas y gastos
     meses_etiquetas, ventas_mensuales, gastos_mensuales = reporte_graficos_data()
 
-   
-
-    # Total de ventas y gastos
-    total_ventas = sum([v['total_ventas'] for v in ventas_mensuales])
-    total_gastos = sum([g['total_gastos'] for g in gastos_mensuales])
+    total_ventas = sum([v.get('total_ventas', 0) for v in ventas_mensuales])
+    total_gastos = sum([g.get('total_gastos', 0) for g in gastos_mensuales])
 
     context = {
         'asistencia_del_mes': asistencia_del_mes,
         'total_ventas': total_ventas,
         'total_gastos': total_gastos,
         'meses_etiquetas_json': json.dumps(meses_etiquetas),
-        'datos_ventas_json': json.dumps([float(v['total_ventas']) for v in ventas_mensuales]),
-        'datos_gastos_json': json.dumps([float(g['total_gastos']) for g in gastos_mensuales]),
+        'datos_ventas_json': json.dumps([float(v.get('total_ventas', 0)) for v in ventas_mensuales]),
+        'datos_gastos_json': json.dumps([float(g.get('total_gastos', 0)) for g in gastos_mensuales]),
     }
     return render(request, 'app/home.html', context)
-
 
 def reporte_graficos_data():
     """
     Genera los datos para los gráficos de ventas y gastos.
     Devuelve: meses_etiquetas, ventas_mensuales, gastos_mensuales
     """
-    # Ventas
     ventas_qs = OrdenCompra.objects.annotate(
         mes=ExtractMonth('fecha'),
         ano=ExtractYear('fecha')
@@ -56,7 +56,6 @@ def reporte_graficos_data():
         total_ventas=Sum('total')
     ).order_by('ano', 'mes')
 
-    # Gastos
     gastos_qs = Gasto.objects.annotate(
         mes=ExtractMonth('fecha'),
         ano=ExtractYear('fecha')
@@ -64,255 +63,363 @@ def reporte_graficos_data():
         total_gastos=Sum('monto')
     ).order_by('ano', 'mes')
 
-    # Crear etiquetas de meses (ej: '2025-01', '2025-02')
-    meses_etiquetas = [f"{g['ano']}-{str(g['mes']).zfill(2)}" for g in ventas_qs]
+    meses_ventas = {f"{v['ano']}-{str(v['mes']).zfill(2)}" for v in ventas_qs}
+    meses_gastos = {f"{g['ano']}-{str(g['mes']).zfill(2)}" for g in gastos_qs}
+    meses_etiquetas = sorted(list(meses_ventas.union(meses_gastos)))
 
-    return meses_etiquetas, list(ventas_qs), list(gastos_qs)
+    ventas_dict = {f"{v['ano']}-{str(v['mes']).zfill(2)}": v for v in ventas_qs}
+    gastos_dict = {f"{g['ano']}-{str(g['mes']).zfill(2)}": g for g in gastos_qs}
 
+    ventas_final = [ventas_dict.get(mes, {'total_ventas': 0}) for mes in meses_etiquetas]
+    gastos_final = [gastos_dict.get(mes, {'total_gastos': 0}) for mes in meses_etiquetas]
+
+    return meses_etiquetas, ventas_final, gastos_final
 
 def lista_ordenes(request):
     """
     Muestra una lista de todas las órdenes de compra.
     """
-    ordenes = OrdenCompra.objects.all().order_by('-fecha')
+    ordenes = OrdenCompra.objects.prefetch_related('detalles__producto').all().order_by('-fecha')
     return render(request, 'app/lista_ordenes.html', {'ordenes': ordenes})
 
 def crear_orden(request):
     if request.method == 'POST':
         form = OrdenCompraForm(request.POST)
-        if form.is_valid():
-            orden = form.save(commit=False)
-            producto = orden.producto
-            if producto.disminuir_stock(orden.cantidad):
-                orden.save()  # Esto guardará la orden en la base de datos
-                return redirect('detalle_orden', orden_id=orden.pk)
-            else:
-                form.add_error('cantidad', 'No hay suficiente stock para este producto.')
+        formset = DetalleOrdenFormSet(request.POST)
+
+        if form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    orden = form.save(commit=False)
+                    orden.save()
+
+                    detalles = formset.save(commit=False)
+                    total_orden = 0
+                    productos_a_guardar = []
+                    valid_details_count = 0
+
+                    for i, detalle_form in enumerate(formset):
+                        if formset.can_delete and formset._should_delete_form(detalle_form):
+                            continue
+                        if 'producto' in detalle_form.cleaned_data and detalle_form.cleaned_data.get('producto') and detalle_form.cleaned_data.get('cantidad', 0) > 0:
+                            valid_details_count += 1
+                            detalle = detalle_form.instance
+                            producto = detalle.producto
+                            if not producto.disminuir_stock(detalle.cantidad):
+                                raise Exception(f"No hay suficiente stock para: {producto.nombre}")
+                            total_linea = detalle.cantidad * detalle.precio_unitario
+                            total_orden += total_linea
+                            detalle.orden = orden
+                            productos_a_guardar.append(detalle)
+                        elif detalle_form.has_changed():
+                             pass
+
+                    if valid_details_count == 0:
+                        raise Exception("Debes añadir al menos un producto a la orden.")
+
+                    for detalle in productos_a_guardar:
+                         detalle.save()
+
+                    orden.total = total_orden
+                    orden.save()
+
+                    messages.success(request, f"Orden {orden.numero_venta} creada exitosamente.")
+                    return redirect('detalle_orden', orden_id=orden.pk)
+            except Exception as e:
+                messages.error(request, str(e))
     else:
         form = OrdenCompraForm()
-    
-    context = {'orden_form': form}  # Se debe cambiar 'form' por 'orden_form' para que coincida con la plantilla
+        formset = DetalleOrdenFormSet()
+
+    context = {
+        'orden_form': form,
+        'detalle_formset': formset
+    }
     return render(request, 'app/crear_orden.html', context)
 
 def detalle_orden(request, orden_id):
     """
     Muestra el detalle de una orden de compra específica.
     """
-    orden = get_object_or_404(OrdenCompra, pk=orden_id)
+    orden = get_object_or_404(
+        OrdenCompra.objects.prefetch_related('detalles__producto'),
+        pk=orden_id
+    )
     return render(request, 'app/detalle_orden.html', {'orden': orden})
 
-def imprimir_orden(request, orden_id):
+# --- VISTA PDF CORREGIDA ---
+def descargar_orden_pdf(request, orden_id):
     """
-    Genera un PDF para imprimir la orden de compra.
+    Genera un PDF para descargar la orden de compra usando wkhtmltopdf.
     """
-    orden = get_object_or_404(OrdenCompra, pk=orden_id)
-    
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="orden_{orden.numero_venta}.pdf"'
+    orden = get_object_or_404(OrdenCompra.objects.prefetch_related('detalles__producto'), pk=orden_id)
+    html_string = render_to_string('app/detalle_orden_render.html', {'orden': orden, 'request': request})
 
-    buffer = BytesIO()
-    p = canvas.Canvas(buffer)
+    try:
+        options = {
+            'page-size': 'A7',
+            'margin-top': '5mm', 'margin-right': '5mm',
+            'margin-bottom': '5mm', 'margin-left': '5mm',
+            'encoding': "UTF-8",
+            'enable-local-file-access': None,
+            # 'no-outline': None, <-- Eliminado
+            'quiet': ''
+        }
+        # --- CONFIGURACIÓN DE RUTA (DESCOMENTA Y AJUSTA SI ES NECESARIO) ---
+        # Asegúrate que la ruta apunta a wkhtmltopdf.exe
+        # path_wkhtmltopdf = 'C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe' # EJEMPLO
+        # config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+        # pdf_data = pdfkit.from_string(html_string, False, options=options, configuration=config)
 
-    # Contenido del PDF
-    p.drawString(100, 750, f"Orden de Compra: {orden.numero_venta}")
-    p.drawString(100, 730, f"Fecha: {orden.fecha.strftime('%d-%m-%Y')}")
-    p.drawString(100, 710, f"Cliente: {orden.cliente}")
-    p.drawString(100, 690, f"Dirección: {orden.direccion}")
-    p.drawString(100, 670, f"Producto: {orden.producto.nombre}")
-    p.drawString(100, 650, f"Cantidad: {orden.cantidad}")
-    p.drawString(100, 630, f"Precio Unitario: ${orden.precio_unitario}")
-    p.drawString(100, 610, f"Total: ${orden.total}")
+        # --- Si está en el PATH ---
+        pdf_data = pdfkit.from_string(html_string, False, options=options)
+        # Eliminamos la llamada duplicada
 
-    p.showPage()
-    p.save()
+        response = HttpResponse(pdf_data, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="orden_{orden.numero_venta or orden.id}.pdf"'
+        return response
+    except OSError as e:
+        error_msg = f"Error al generar PDF: {e}. Asegúrate de que wkhtmltopdf esté instalado y en el PATH."
+        print(error_msg)
+        return HttpResponse(error_msg, status=500)
+    except Exception as e:
+        error_msg = f"Error inesperado al generar PDF: {e}"
+        print(error_msg)
+        return HttpResponse(error_msg, status=500)
 
-    buffer.seek(0)
-    return HttpResponse(buffer, content_type='application/pdf')
+# --- VISTA JPG CORREGIDA ---
+def descargar_orden_jpg(request, orden_id):
+    """
+    Genera un JPG para descargar la orden de compra usando wkhtmltoimage.
+    """
+    orden = get_object_or_404(OrdenCompra.objects.prefetch_related('detalles__producto'), pk=orden_id)
+    html_string = render_to_string('app/detalle_orden_render.html', {'orden': orden, 'request': request})
 
-# Vistas para Trabajadores y Asistencia
+    try:
+        options = {
+            'format': 'jpg', 'encoding': "UTF-8", 'quality': '90',
+            'enable-local-file-access': None,
+            # 'no-outline': None, <-- Eliminado
+            'quiet': ''
+        }
+        # --- CONFIGURACIÓN DE RUTA (DESCOMENTA Y AJUSTA SI ES NECESARIO) ---
+        # Asegúrate que la ruta apunta a wkhtmltoimage.exe
+        # path_wkhtmltoimage = 'C:/Program Files/wkhtmltopdf/bin/wkhtmltoimage.exe' # EJEMPLO
+        # config = imgkit.config(wkhtmltoimage=path_wkhtmltoimage)
+        # jpg_data = imgkit.from_string(html_string, False, options=options, config=config)
+
+        # --- Si está en el PATH ---
+        jpg_data = imgkit.from_string(html_string, False, options=options)
+        # Eliminamos la llamada duplicada
+
+        response = HttpResponse(jpg_data, content_type='image/jpeg')
+        response['Content-Disposition'] = f'attachment; filename="orden_{orden.numero_venta or orden.id}.jpg"'
+        return response
+    except OSError as e:
+        error_msg = f"Error al generar JPG: {e}. Asegúrate de que wkhtmltoimage esté instalado y en el PATH."
+        print(error_msg)
+        return HttpResponse(error_msg, status=500)
+    except Exception as e:
+        error_msg = f"Error inesperado al generar JPG: {e}"
+        print(error_msg)
+        return HttpResponse(error_msg, status=500)
+
+
+# --- VISTA WORD (Sin cambios necesarios por este error) ---
+def descargar_orden_docx(request, orden_id):
+    """
+    Genera un archivo Word (.docx) para descargar la orden de compra.
+    """
+    orden = get_object_or_404(OrdenCompra.objects.prefetch_related('detalles__producto'), pk=orden_id)
+    document = Document()
+
+    sections = document.sections
+    for section in sections:
+        section.top_margin = Inches(0.4)
+        section.bottom_margin = Inches(0.4)
+        section.left_margin = Inches(0.5)
+        section.right_margin = Inches(0.5)
+
+    p_empresa = document.add_paragraph()
+    p_empresa.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    runner = p_empresa.add_run(
+        "CONSTRUCCIONES V & G LIZ CASTILLO GARCIA SPA\n"
+        "RUT: 77.858.577-4\n"
+        "Dirección: Vilaco 301, Toconao\n"
+        "Teléfono: +56 9 52341652" # Asegúrate que este sea el número correcto
+    )
+    runner.font.size = Pt(8)
+    runner.bold = True
+    p_empresa.paragraph_format.space_after = Pt(0)
+
+    document.add_paragraph("---" * 12).alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    p_orden_info = document.add_paragraph()
+    p_orden_info.add_run(f"Orden de Compra #{orden.numero_venta or orden.id}\n").bold = True
+    p_orden_info.add_run(f"Cliente: {orden.cliente}\n")
+    p_orden_info.add_run(f"Rut: {orden.rut or 'N/A'}\n")
+    p_orden_info.add_run(f"Fecha: {orden.fecha.strftime('%d-%m-%Y %H:%M')}\n")
+    p_orden_info.add_run(f"Dirección: {orden.direccion or 'N/A'}")
+    for run in p_orden_info.runs:
+        run.font.size = Pt(9)
+    p_orden_info.paragraph_format.space_after = Pt(6)
+
+    document.add_paragraph("---" * 12).alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    p_detalle_titulo = document.add_paragraph()
+    p_detalle_titulo.add_run("Detalle").bold = True
+    p_detalle_titulo.runs[0].font.size = Pt(10)
+    p_detalle_titulo.paragraph_format.space_after = Pt(3)
+
+    table = document.add_table(rows=1, cols=4)
+    table.style = 'Table Grid'
+    table.autofit = False
+
+    hdr_cells = table.rows[0].cells
+    hdr_cells[0].text = 'Producto'
+    hdr_cells[1].text = 'Cant'
+    hdr_cells[2].text = 'P. Unit.'
+    hdr_cells[3].text = 'Total'
+    for cell in hdr_cells:
+         cell.paragraphs[0].runs[0].font.bold = True
+         cell.paragraphs[0].runs[0].font.size = Pt(9)
+         cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    for detalle in orden.detalles.all():
+        row_cells = table.add_row().cells
+        precio_unit_str = f"${detalle.precio_unitario:,.0f}".replace(",",".")
+        total_linea_str = f"${detalle.total_linea:,.0f}".replace(",",".")
+        row_cells[0].text = detalle.producto.nombre
+        row_cells[1].text = str(detalle.cantidad)
+        row_cells[2].text = precio_unit_str
+        row_cells[3].text = total_linea_str
+        for i, cell in enumerate(row_cells):
+             cell.paragraphs[0].runs[0].font.size = Pt(9)
+             if i > 0:
+                cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+
+    table.columns[0].width = Inches(2.8)
+    table.columns[1].width = Inches(0.5)
+    table.columns[2].width = Inches(0.9)
+    table.columns[3].width = Inches(1.0)
+
+    document.add_paragraph("---" * 12).alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    p_total = document.add_paragraph()
+    p_total.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    total_str = f"${orden.total:,.0f}".replace(",",".")
+    runner_total = p_total.add_run(f"Total a Pagar: {total_str}")
+    runner_total.bold = True
+    runner_total.font.size = Pt(11)
+    p_total.paragraph_format.space_after = Pt(0)
+
+    document.add_paragraph("---" * 12).alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    p_gracias = document.add_paragraph(
+        "¡Gracias por su compra!\nEsperamos atenderle pronto."
+    )
+    p_gracias.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_gracias.runs[0].font.size = Pt(8)
+
+    f = BytesIO()
+    document.save(f)
+    f.seek(0)
+    response = HttpResponse(
+        f.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
+    response['Content-Disposition'] = f'attachment; filename="orden_{orden.numero_venta or orden.id}.docx"'
+    f.close()
+    return response
+
+# --- Vistas restantes (sin cambios) ---
 def lista_trabajadores(request):
-    """
-    Muestra una lista de todos los trabajadores.
-    """
     trabajadores = Trabajador.objects.all()
     return render(request, 'app/lista_trabajadores.html', {'trabajadores': trabajadores})
 
 def crear_trabajador(request):
-    """
-    Crea un nuevo trabajador.
-    """
     if request.method == 'POST':
         form = TrabajadorForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, "Trabajador creado exitosamente.")
             return redirect('lista_trabajadores')
     else:
         form = TrabajadorForm()
-    
     return render(request, 'app/crear_trabajador.html', {'form': form})
 
-def generar_qr_trabajador(request, trabajador_id):
-    """
-    Genera un código QR para un trabajador específico.
-    """
-    trabajador = get_object_or_404(Trabajador, pk=trabajador_id)
-    
-    # La información codificada en el QR es el RUT del trabajador
-    qr_data = trabajador.rut
-    
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(qr_data)
-    qr.make(fit=True)
-    img = qr.make_image(fill_color="black", back_color="white")
-    
-    buffer = BytesIO()
-    img.save(buffer, format="PNG")
-    
-    return HttpResponse(buffer.getvalue(), content_type="image/png")
-
-def marcar_asistencia(request):
-    """
-    Registra la asistencia de un trabajador mediante un código QR.
-    """
-    rut = request.GET.get('rut')
-    mensaje = ""
-    tipo_proyecto_opciones = Trabajador.TIPO_PROYECTO
-    
-    if rut:
-        try:
-            trabajador = Trabajador.objects.get(rut=rut)
-            # Verificar si ya existe un registro de asistencia para hoy
-            if not Asistencia.objects.filter(trabajador=trabajador, fecha=date.today()).exists():
-                # Marcar la asistencia y guardar
-                asistencia = Asistencia.objects.create(trabajador=trabajador, tipo_proyecto=trabajador.tipo_proyecto)
-                mensaje = f"Asistencia de {trabajador.nombre} marcada con éxito para el proyecto {trabajador.tipo_proyecto}."
-            else:
-                mensaje = f"La asistencia de {trabajador.nombre} ya ha sido marcada hoy."
-        except Trabajador.DoesNotExist:
-            mensaje = "Trabajador no encontrado. Por favor, intente de nuevo."
-    
-    context = {
-        'mensaje': mensaje,
-        'tipo_proyecto_opciones': tipo_proyecto_opciones
-    }
-    return render(request, 'app/marcar_asistencia.html', context)
-
 def asistencia_manual(request):
-    """
-    Registra la asistencia de forma manual.
-    """
     if request.method == 'POST':
         form = AsistenciaManualForm(request.POST)
         if form.is_valid():
-            asistencia = form.save(commit=False)
-            
-            # Obtener el tipo de proyecto del trabajador si no se especificó en el form
-            if not asistencia.tipo_proyecto:
-                asistencia.tipo_proyecto = asistencia.trabajador.tipo_proyecto
-            
-            asistencia.save()
-            return redirect('asistencia_confirmacion')
+            trabajador = form.cleaned_data['trabajador']
+            fecha = form.cleaned_data['fecha']
+            tipo_proyecto = form.cleaned_data['tipo_proyecto']
+            if not Asistencia.objects.filter(trabajador=trabajador, fecha=fecha, tipo_proyecto=tipo_proyecto).exists():
+                Asistencia.objects.create(
+                    trabajador=trabajador, fecha=fecha, tipo_proyecto=tipo_proyecto
+                )
+                messages.success(request, "Asistencia registrada exitosamente.")
+                return redirect('asistencia_confirmacion')
+            else:
+                messages.error(request, "Esta asistencia ya fue registrada.")
     else:
         form = AsistenciaManualForm()
-        
     return render(request, 'app/asistencia_manual.html', {'form': form})
 
 def asistencia_confirmacion(request):
-    """
-    Muestra un mensaje de confirmación después de marcar la asistencia.
-    """
-    mensaje = "La asistencia ha sido registrada exitosamente."
-    return render(request, 'app/asistencia_confirmacion.html', {'mensaje': mensaje})
+    return render(request, 'app/asistencia_confirmacion.html')
 
-
-
-# Vistas para Inventario
 def inventario(request):
-    """
-    Muestra el inventario de productos.
-    """
     productos = Producto.objects.all().order_by('nombre')
     return render(request, 'app/inventario.html', {'productos': productos})
 
 def crear_producto(request):
-    """
-    Crea un nuevo producto en el inventario.
-    """
+    titulo = "Agregar Nuevo Producto"
     if request.method == 'POST':
         form = ProductoForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, "Producto creado exitosamente.")
             return redirect('inventario')
     else:
         form = ProductoForm()
-    
-    return render(request, 'app/crear_producto.html', {'form': form})
+    return render(request, 'app/crear_producto.html', {'form': form, 'titulo': titulo})
 
 def editar_producto(request, pk):
-    """
-    Edita un producto existente.
-    """
     producto = get_object_or_404(Producto, pk=pk)
+    titulo = f"Editar Producto: {producto.nombre}"
     if request.method == 'POST':
         form = ProductoForm(request.POST, instance=producto)
         if form.is_valid():
             form.save()
+            messages.success(request, "Producto actualizado exitosamente.")
             return redirect('inventario')
     else:
         form = ProductoForm(instance=producto)
-    
-    return render(request, 'app/editar_producto.html', {'form': form, 'producto': producto})
+    return render(request, 'app/editar_producto.html', {'form': form, 'producto': producto, 'titulo': titulo})
 
 def eliminar_producto(request, pk):
-    """
-    Elimina un producto del inventario.
-    """
     producto = get_object_or_404(Producto, pk=pk)
     if request.method == 'POST':
+        nombre_producto = producto.nombre
         producto.delete()
+        messages.success(request, f"Producto '{nombre_producto}' eliminado exitosamente.")
         return redirect('inventario')
-    
-    return render(request, 'app/eliminar_producto.html', {'producto': producto})
+    messages.warning(request, "Acción no permitida.")
+    return redirect('inventario')
 
-# Vistas para Gastos
 def lista_gastos(request):
-    """
-    Muestra una lista de todos los gastos registrados.
-    """
     gastos = Gasto.objects.all().order_by('-fecha')
     return render(request, 'app/lista_gastos.html', {'gastos': gastos})
 
-
 def registrar_gasto(request):
-    """
-    Registra un nuevo gasto.
-    """
     if request.method == 'POST':
         form = GastoForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, "Gasto registrado exitosamente.")
             return redirect('lista_gastos')
     else:
         form = GastoForm()
-        
     return render(request, 'app/registrar_gasto.html', {'form': form})
-
-def gastos_por_categoria(request):
-    """
-    Muestra un resumen de los gastos por categoría.
-    """
-    gastos_resumen = Gasto.objects.values('categoria').annotate(total=Sum('monto')).order_by('categoria')
-    return render(request, 'app/gastos_por_categoria.html', {'gastos_resumen': gastos_resumen})
-
-
-def confirmacion_accion(request):
-    """
-    Vista genérica para mostrar un mensaje de confirmación.
-    """
-    mensaje = request.GET.get('mensaje', 'Acción realizada con éxito.')
-    return render(request, 'app/confirmacion_accion.html', {'mensaje': mensaje})
