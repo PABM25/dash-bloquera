@@ -1,65 +1,53 @@
+{# ventas/templates/ventas/crear_orden.html #}
 {% extends 'core/base.html' %}
-{% load crispy_forms_tags %} 
+{% load crispy_forms_tags %}
+{% load static %}
+{% load humanize %} {# Añadido para formatear números si es necesario #}
 
-{% load static %} 
-{%block contenido %}
+{% block contenido %}
 
 <div class="container-fluid mt-4">
   <div class="row">
+    {# Columna del Formulario #}
     <div class="col-lg-7 col-md-12 mb-4">
       <div class="card shadow-sm">
         <div class="card-header card-header-branding">
           <h2 class="mb-0">Crear Orden de Compra</h2>
         </div>
         <div class="card-body">
-          {% if messages %} {% for message in messages %}
-          <div class="alert alert-danger" role="alert">{{ message }}</div>
-          {% endfor %} {% endif %} {% if form.errors or detalle_formset.errors
-          %}
+          {# Mostrar mensajes de error generales del formulario o formset #}
+          {% if orden_form.non_field_errors or detalle_formset.non_form_errors %}
           <div class="alert alert-danger">
-            Por favor corrige los errores indicados abajo. {{
-            detalle_formset.non_form_errors }}
+              {% if orden_form.non_field_errors %}
+                  {{ orden_form.non_field_errors }}
+              {% endif %}
+              {% if detalle_formset.non_form_errors %}
+                  {{ detalle_formset.non_form_errors }}
+              {% endif %}
           </div>
           {% endif %}
+          {# Mostrar mensajes flash (éxito, error de stock, etc.) #}
+           {% if messages %}
+            {% for message in messages %}
+              <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+           {% endif %}
 
           <form id="orden-form" method="post">
             {% csrf_token %}
+            {# Renderizar campos del OrdenCompraForm manualmente para mejor control #}
             <div class="row">
               <div class="col-md-6 mb-3">
-                <label
-                  for="{{ orden_form.cliente.id_for_label }}"
-                  class="form-label"
-                  >{{ orden_form.cliente.label }}</label
-                >
-                {{ orden_form.cliente }} {% if orden_form.cliente.errors %}
-                <div class="invalid-feedback d-block">
-                  {{ orden_form.cliente.errors }}
-                </div>
-                {% endif %}
+                 {{ orden_form.cliente|as_crispy_field }}
               </div>
               <div class="col-md-6 mb-3">
-                <label
-                  for="{{ orden_form.rut.id_for_label }}"
-                  class="form-label"
-                  >{{ orden_form.rut.label }}</label
-                >
-                {{ orden_form.rut }} {% if orden_form.rut.errors %}
-                <div class="invalid-feedback d-block">
-                  {{ orden_form.rut.errors }}
-                </div>
-                {% endif %}
+                 {{ orden_form.rut|as_crispy_field }}
               </div>
               <div class="col-md-12 mb-3">
-                <label
-                  for="{{ orden_form.direccion.id_for_label }}"
-                  class="form-label"
-                  >{{ orden_form.direccion.label }}</label
-                >
-                {{ orden_form.direccion }} {% if orden_form.direccion.errors %}
-                <div class="invalid-feedback d-block">
-                  {{ orden_form.direccion.errors }}
-                </div>
-                {% endif %}
+                 {{ orden_form.direccion|as_crispy_field }}
               </div>
             </div>
 
@@ -69,127 +57,70 @@
 
             <div id="detalle-formset-container">
               {% for form in detalle_formset %}
-              <div
-                class="detalle-form border-bottom pb-3 mb-3"
-                id="{{ form.prefix }}-row"
-              >
-                {% if form.instance.pk %}{{ form.id }}{% endif %}
+              <div class="detalle-form border-bottom pb-3 mb-3" id="{{ form.prefix }}-row">
+                {% if form.instance.pk %}{{ form.id }}{% endif %} {# Input oculto ID si el form existe #}
                 <div class="row align-items-center">
-                  <div class="col-md-5 mb-3">
-                    <label
-                      for="{{ form.producto.id_for_label }}"
-                      class="form-label"
-                      >{{ form.producto.label }}</label
-                    >
-                    {{ form.producto }} {% if form.producto.errors %}
-                    <div class="invalid-feedback d-block">
-                      {{ form.producto.errors }}
-                    </div>
-                    {% endif %}
+                  <div class="col-md-5 mb-2"> {# Ajustado mb #}
+                      {{ form.producto|as_crispy_field }}
+                      {# Mostrar stock debajo del select #}
+                      <small class="text-muted stock-display" id="stock-{{ form.prefix }}"></small>
                   </div>
-                  <div class="col-md-2 mb-3">
-                    <label
-                      for="{{ form.cantidad.id_for_label }}"
-                      class="form-label"
-                      >{{ form.cantidad.label }}</label
-                    >
-                    <span
-                      class="text-muted small d-block stock-display"
-                      id="stock-{{ form.prefix }}"
-                    ></span>
-                    {{ form.cantidad }} {% if form.cantidad.errors %}
-                    <div class="invalid-feedback d-block">
-                      {{ form.cantidad.errors }}
-                    </div>
-                    {% endif %}
+                  <div class="col-md-2 mb-2"> {# Ajustado mb #}
+                      {{ form.cantidad|as_crispy_field }}
                   </div>
-                  <div class="col-md-3 mb-3">
-                    <label
-                      for="{{ form.precio_unitario.id_for_label }}"
-                      class="form-label"
-                      >{{ form.precio_unitario.label }}</label
-                    >
-                    {{ form.precio_unitario }} {% if form.precio_unitario.errors
-                    %}
-                    <div class="invalid-feedback d-block">
-                      {{ form.precio_unitario.errors }}
-                    </div>
-                    {% endif %}
+                  <div class="col-md-3 mb-2"> {# Ajustado mb #}
+                     {{ form.precio_unitario|as_crispy_field }}
                   </div>
-                  <div class="col-md-2 mb-3 align-self-end">
-                    {% if form.can_delete or detalle_formset.can_delete_extra %}
-                    {{ form.DELETE }}
-                    <button
-                      type="button"
-                      class="btn btn-danger btn-sm remove-form-row w-100"
-                    >
-                      <i class="fas fa-trash"></i> Quitar
-                    </button>
-                    {% endif %}
+                  <div class="col-md-2 mb-2 d-flex align-items-end"> {# Alineado abajo #}
+                      {# Mostrar el botón de eliminar #}
+                      {% if detalle_formset.can_delete %}
+                       <div class="form-check" style="display: none;"> {# Ocultar visualmente el checkbox DELETE #}
+                           {{ form.DELETE }}
+                       </div>
+                       <button type="button" class="btn btn-outline-danger btn-sm remove-form-row w-100 mb-3"> {# mb-3 para alinear con crispy #}
+                           <i class="fas fa-trash"></i> Quitar
+                       </button>
+                      {% endif %}
                   </div>
                 </div>
-                {% if form.non_field_errors %}
-                <div class="alert alert-danger mt-2">
-                  {{ form.non_field_errors }}
-                </div>
-                {% endif %}
+                 {# Mostrar errores específicos de esta fila del formset #}
+                 {% if form.non_field_errors %}
+                    <div class="alert alert-danger mt-2">
+                      {{ form.non_field_errors }}
+                    </div>
+                 {% endif %}
               </div>
               {% endfor %}
             </div>
 
-            <div id="empty-form-template" style="display: none">
-              <div
-                class="detalle-form border-bottom pb-3 mb-3"
-                id="{{ detalle_formset.empty_form.prefix }}-row"
-              >
+            {# Plantilla para nuevas filas (oculta) #}
+            <div id="empty-form-template" style="display: none;">
+              <div class="detalle-form border-bottom pb-3 mb-3" id="__prefix__-row">
+                 {{ detalle_formset.empty_form.id }} {# Añadir ID por si acaso #}
                 <div class="row align-items-center">
-                  <div class="col-md-5 mb-3">
-                    <label
-                      for="{{ detalle_formset.empty_form.producto.id_for_label }}"
-                      class="form-label"
-                      >{{ detalle_formset.empty_form.producto.label }}</label
-                    >
-                    {{ detalle_formset.empty_form.producto }}
+                  <div class="col-md-5 mb-2">
+                     {{ detalle_formset.empty_form.producto|as_crispy_field }}
+                     <small class="text-muted stock-display" id="stock-__prefix__"></small>
                   </div>
-                  <div class="col-md-2 mb-3">
-                    <label
-                      for="{{ detalle_formset.empty_form.cantidad.id_for_label }}"
-                      class="form-label"
-                      >{{ detalle_formset.empty_form.cantidad.label }}</label
-                    >
-                    <span
-                      class="text-muted small d-block stock-display"
-                      id="stock-{{ detalle_formset.empty_form.prefix }}"
-                    ></span>
-                    {{ detalle_formset.empty_form.cantidad }}
+                  <div class="col-md-2 mb-2">
+                     {{ detalle_formset.empty_form.cantidad|as_crispy_field }}
                   </div>
-                  <div class="col-md-3 mb-3">
-                    <label
-                      for="{{ detalle_formset.empty_form.precio_unitario.id_for_label }}"
-                      class="form-label"
-                      >{{ detalle_formset.empty_form.precio_unitario.label
-                      }}</label
-                    >
-                    {{ detalle_formset.empty_form.precio_unitario }}
+                  <div class="col-md-3 mb-2">
+                     {{ detalle_formset.empty_form.precio_unitario|as_crispy_field }}
                   </div>
-                  <div class="col-md-2 mb-3 align-self-end">
-                    {{ detalle_formset.empty_form.DELETE }}
-                    <button
-                      type="button"
-                      class="btn btn-danger btn-sm remove-form-row w-100"
-                    >
-                      <i class="fas fa-trash"></i> Quitar
-                    </button>
+                  <div class="col-md-2 mb-2 d-flex align-items-end">
+                      <div class="form-check" style="display: none;">
+                           {{ detalle_formset.empty_form.DELETE }}
+                      </div>
+                      <button type="button" class="btn btn-outline-danger btn-sm remove-form-row w-100 mb-3">
+                           <i class="fas fa-trash"></i> Quitar
+                      </button>
                   </div>
                 </div>
               </div>
             </div>
 
-            <button
-              type="button"
-              id="add-form-row"
-              class="btn btn-success mt-2"
-            >
+            <button type="button" id="add-form-row" class="btn btn-success mt-2">
               <i class="fas fa-plus"></i> Añadir Producto
             </button>
 
@@ -203,151 +134,241 @@
       </div>
     </div>
 
+    {# Columna de Vista Previa #}
     <div class="col-lg-5 col-md-12">
-      <h5 class="text-center fw-bold mb-3" style="color: #bf2642">
-        Vista Previa de Comprobante
-      </h5>
-      <div
-        id="preview-ticket"
-        class="card shadow-sm p-4 mx-auto"
-        style="
-          max-width: 400px;
-          min-height: 500px;
-          font-family: 'Courier New', monospace;
-        "
-      ></div>
+        <h5 class="text-center fw-bold mb-3" style="color: #BF2642;">Vista Previa de Comprobante</h5>
+        <div id="preview-ticket" class="card shadow-sm p-4 mx-auto" style="max-width: 400px; min-height: 500px; font-family: 'Courier New', monospace; border: 1px solid #ccc; background-color: #fff;">
+            {# Contenido de la vista previa se generará con JS #}
+            <div class="text-center mb-3"><strong>CONSTRUCCIONES V & G</strong></div>
+            <hr style="border-top: 1px dashed #555;">
+            <div><strong>Orden #:</strong> <span id="preview-numero">N/A</span></div>
+            <div><strong>Fecha:</strong> <span id="preview-fecha">{% now "d-m-Y H:i" %}</span></div>
+            <div><strong>Cliente:</strong> <span id="preview-cliente">N/A</span></div>
+            <div><strong>RUT:</strong> <span id="preview-rut">N/A</span></div>
+            <div><strong>Dirección:</strong> <span id="preview-direccion">N/A</span></div>
+            <hr style="border-top: 1px dashed #555;">
+            <div class="text-center mb-2"><strong>DETALLE</strong></div>
+            <table class="productos table table-sm" style="font-size: 0.8rem;">
+                <thead>
+                    <tr>
+                        <th style="border-bottom: 1px solid #555 !important;">Producto</th>
+                        <th style="border-bottom: 1px solid #555 !important; text-align: center;">Cant</th>
+                        <th style="border-bottom: 1px solid #555 !important; text-align: right;">P.Unit</th>
+                        <th style="border-bottom: 1px solid #555 !important; text-align: right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="preview-productos-body">
+                    {# Las filas se añadirán aquí #}
+                    <tr><td colspan="4" class="text-center text-muted">(Vacío)</td></tr>
+                </tbody>
+            </table>
+            <hr style="border-top: 1px dashed #555;">
+            <div class="text-end fw-bold fs-5">Total: <span id="preview-total">$0</span></div>
+            <hr style="border-top: 1px dashed #555;">
+            <div class="text-center small mt-3">¡Gracias por su compra!</div>
+        </div>
     </div>
+
   </div>
 </div>
 
-{% endblock contenido %} {% block extra_js %}
+{% endblock contenido %}
+
+{% block extra_js %}
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const formsetContainer = document.getElementById(
-      "detalle-formset-container"
-    );
-    const addButton = document.getElementById("add-form-row");
-    const template = document.getElementById("empty-form-template").innerHTML;
-    const totalFormsInput = document.getElementById("id_detalles-TOTAL_FORMS");
-    const form = document.getElementById("orden-form");
+document.addEventListener('DOMContentLoaded', function() {
+    const formsetContainer = document.getElementById('detalle-formset-container');
+    const addButton = document.getElementById('add-form-row');
+    const template = document.getElementById('empty-form-template').innerHTML;
+    const totalFormsInput = document.getElementById('id_detalles-TOTAL_FORMS');
+    const form = document.getElementById('orden-form');
 
-    // --- NUEVA FUNCIÓN PARA OBTENER STOCK ---
+    // --- FUNCIÓN PARA OBTENER STOCK ---
     async function fetchStock(productoId, stockDisplayElement) {
-      if (!productoId) {
-        stockDisplayElement.textContent = "";
-        return;
-      }
-      try {
-        // --- MODIFICACIÓN AQUÍ ---
-        const url = `{% url 'inventario:api_get_stock' 0 %}`.replace(
-          "0",
-          productoId
-        );
-        const response = await fetch(url);
-        // --- FIN MODIFICACIÓN ---
-        if (!response.ok) {
-          throw new Error("Error al obtener stock");
+        if (!productoId) {
+            stockDisplayElement.textContent = "";
+            return;
         }
-        const data = await response.json();
-        stockDisplayElement.textContent = `Stock: ${data.stock}`;
-        stockDisplayElement.style.color = data.stock > 0 ? "green" : "red";
-      } catch (error) {
-        console.error(error);
-        stockDisplayElement.textContent = "Stock: N/A";
-        stockDisplayElement.style.color = "gray";
-      }
+        try {
+            // --- CORREGIDO: Uso correcto de {% url %} para la API ---
+            // Usamos un ID temporal (0) que reemplazaremos
+            const urlTemplate = "{% url 'inventario:api_get_stock' 0 %}";
+            const url = urlTemplate.replace('0', productoId);
+            // --- FIN CORRECCIÓN ---
+
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Error ${response.status} al obtener stock`);
+            }
+            const data = await response.json();
+            if (data.error) {
+                 throw new Error(data.error);
+            }
+            stockDisplayElement.textContent = `Stock: ${data.stock}`;
+            stockDisplayElement.style.color = data.stock > 0 ? "green" : "red";
+            // Actualizar el atributo max del input de cantidad (opcional pero útil)
+            const cantidadInput = stockDisplayElement.closest('.row').querySelector('.cantidad-input');
+            if (cantidadInput) {
+                //cantidadInput.max = data.stock; // Esto puede ser molesto si editan y baja el stock
+            }
+
+        } catch (error) {
+            console.error("Error fetching stock:", error);
+            stockDisplayElement.textContent = "Stock: Error";
+            stockDisplayElement.style.color = "orange";
+        }
     }
 
-    // --- NUEVA FUNCIÓN PARA ESCUCHAR CAMBIOS DE PRODUCTO ---
+    // --- FUNCIÓN PARA AÑADIR LISTENER DE STOCK ---
     function addStockListener(row) {
-      const productoSelect = row.querySelector(".producto-select");
-      const stockDisplay = row.querySelector(".stock-display");
-      if (productoSelect && stockDisplay) {
-        productoSelect.addEventListener("change", (e) => {
-          fetchStock(e.target.value, stockDisplay);
-        });
-        // Cargar stock al inicio para formularios existentes
-        if (productoSelect.value) {
-          fetchStock(productoSelect.value, stockDisplay);
+        const productoSelect = row.querySelector('.producto-select'); // Asegúrate que el select tenga esta clase
+        const stockDisplay = row.querySelector('.stock-display');
+        if (productoSelect && stockDisplay) {
+            productoSelect.addEventListener('change', (e) => {
+                fetchStock(e.target.value, stockDisplay);
+            });
+            // Cargar stock al inicio para formularios existentes o recién añadidos
+            if (productoSelect.value) {
+                fetchStock(productoSelect.value, stockDisplay);
+            } else {
+                 stockDisplay.textContent = ""; // Limpiar si no hay producto seleccionado
+            }
         }
-      }
     }
 
-    // --- LÓGICA DE FORMSET (MODIFICADA) ---
-    addButton.addEventListener("click", function () {
-      let currentFormCount = parseInt(totalFormsInput.value, 10);
-      let newFormHtml = template.replace(/__prefix__/g, currentFormCount);
-      let tempDiv = document.createElement("div");
-      tempDiv.innerHTML = newFormHtml;
-      let newFormNode = tempDiv.firstElementChild;
+    // --- LÓGICA DE FORMSET ---
+    addButton.addEventListener('click', function() {
+        let currentFormCount = parseInt(totalFormsInput.value, 10);
+        let newFormHtml = template.replace(/__prefix__/g, currentFormCount);
+        let tempDiv = document.createElement('div');
+        tempDiv.innerHTML = newFormHtml;
+        let newFormNode = tempDiv.firstElementChild; // Obtiene el div 'detalle-form'
 
-      formsetContainer.appendChild(newFormNode);
-      totalFormsInput.value = currentFormCount + 1;
+        formsetContainer.appendChild(newFormNode);
+        totalFormsInput.value = currentFormCount + 1; // Incrementar el contador TOTAL_FORMS
 
-      updateRemoveButtonListeners();
-      attachFormListener();
-      addStockListener(newFormNode); // <-- AÑADIDO: Escuchar stock en la nueva fila
+        // Re-inicializar listeners para los botones de eliminar y stock en la nueva fila
+        updateRemoveButtonListeners(); // Actualiza todos por si acaso
+        addStockListener(newFormNode); // Añade listener a la nueva fila
+        updatePreview(); // Actualizar vista previa
     });
 
-    // ... (función removeRow sin cambios) ...
+    function removeRow(e) {
+        let row = e.target.closest('.detalle-form');
+        let deleteInput = row.querySelector('input[name$="-DELETE"]'); // Buscar por nombre que termina en -DELETE
+        let idInput = row.querySelector('input[type="hidden"][name$="-id"]'); // Buscar input oculto ID
+
+        if (deleteInput) {
+            // Si el formset ya existe (tiene ID), marca para borrar en lugar de quitar del DOM
+            if (idInput && idInput.value) {
+                deleteInput.checked = true;
+                row.style.display = 'none'; // Ocultar la fila
+            } else {
+                // Si es una fila nueva (sin ID), simplemente la quitamos
+                row.remove();
+                // Opcional: Podrías querer decrementar TOTAL_FORMS aquí si quitas una nueva fila
+                // let currentFormCount = parseInt(totalFormsInput.value, 10);
+                // totalFormsInput.value = currentFormCount - 1; // ¡Cuidado con la gestión de índices!
+            }
+        } else {
+            // Si no hay checkbox DELETE (raro con formsets, pero por seguridad)
+             row.remove();
+        }
+
+        // Actualizar numeración o índices si es necesario (más complejo, usualmente Django lo maneja bien al enviar)
+
+        updatePreview(); // Actualizar la vista previa después de quitar/ocultar
+    }
+
+
     function updateRemoveButtonListeners() {
-      formsetContainer
-        .querySelectorAll(".remove-form-row")
-        .forEach((button) => {
-          button.removeEventListener("click", removeRow);
-          button.addEventListener("click", removeRow);
+        formsetContainer.querySelectorAll('.remove-form-row').forEach(button => {
+            // Quitar listener anterior para evitar duplicados
+            button.removeEventListener('click', removeRow);
+            // Añadir listener actual
+            button.addEventListener('click', removeRow);
         });
     }
 
-    function removeRow(e) {
-      let row = e.target.closest(".detalle-form");
-      let deleteInput = row.querySelector('input[id$="-DELETE"]');
-      if (deleteInput) {
-        let idInput = row.querySelector('input[type="hidden"][name$="-id"]');
-        if (idInput && idInput.value) {
-          deleteInput.checked = true;
-          row.style.display = "none";
-        } else {
-          row.remove();
-        }
-      } else {
-        row.remove();
-      }
-      updatePreview();
-    }
+    // --- LÓGICA DE VISTA PREVIA ---
+    const previewTicket = document.getElementById('preview-ticket');
+    const previewCliente = document.getElementById('preview-cliente');
+    const previewRut = document.getElementById('preview-rut');
+    const previewDireccion = document.getElementById('preview-direccion');
+    const previewProductosBody = document.getElementById('preview-productos-body');
+    const previewTotal = document.getElementById('preview-total');
 
-    // --- LÓGICA DE VISTA PREVIA (SIN CAMBIOS) ---
-    const previewCliente = document.getElementById("preview-cliente");
-    // ... (resto de variables de vista previa) ...
-    const previewTotal = document.getElementById("preview-total");
-    const formatCurrency = (number) =>
-      "$" + new Intl.NumberFormat("es-CL").format(Math.round(number || 0));
+    // Función para formatear moneda (CLP sin decimales)
+    const formatCurrency = (number) => '$' + new Intl.NumberFormat('es-CL').format(Math.round(number || 0));
 
     function updatePreview() {
-      // ... (código de updatePreview idéntico) ...
-      previewCliente.textContent =
-        document.getElementById("id_cliente").value || "N/A";
-      previewRut.textContent = document.getElementById("id_rut").value || "N/A";
-      previewDireccion.textContent =
-        document.getElementById("id_direccion").value || "N/A";
-      // ... (resto del código) ...
-      previewTotal.textContent = formatCurrency(granTotal);
+        // Datos del cliente
+        previewCliente.textContent = document.getElementById('id_cliente')?.value || 'N/A';
+        previewRut.textContent = document.getElementById('id_rut')?.value || 'N/A';
+        previewDireccion.textContent = document.getElementById('id_direccion')?.value || 'N/A';
+
+        // Productos y Total
+        let granTotal = 0;
+        previewProductosBody.innerHTML = ''; // Limpiar tabla
+
+        let hasProducts = false;
+        formsetContainer.querySelectorAll('.detalle-form').forEach(row => {
+            const deleteInput = row.querySelector('input[name$="-DELETE"]');
+            // Ignorar filas marcadas para borrar u ocultas
+            if (row.style.display === 'none' || (deleteInput && deleteInput.checked)) {
+                return;
+            }
+
+            const productoSelect = row.querySelector('.producto-select');
+            const cantidadInput = row.querySelector('.cantidad-input');
+            const precioInput = row.querySelector('.precio-input');
+
+            if (productoSelect && cantidadInput && precioInput) {
+                const productoId = productoSelect.value;
+                const productoNombre = productoSelect.options[productoSelect.selectedIndex]?.text || 'Seleccionar...';
+                const cantidad = parseFloat(cantidadInput.value) || 0;
+                const precio = parseFloat(precioInput.value) || 0;
+
+                if (productoId && cantidad > 0 && precio >= 0) {
+                    hasProducts = true;
+                    const totalLinea = cantidad * precio;
+                    granTotal += totalLinea;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="text-align: left;">${productoNombre}</td>
+                        <td style="text-align: center;">${cantidad}</td>
+                        <td style="text-align: right;">${formatCurrency(precio)}</td>
+                        <td style="text-align: right;">${formatCurrency(totalLinea)}</td>
+                    `;
+                    previewProductosBody.appendChild(tr);
+                }
+            }
+        });
+
+        // Mostrar "(Vacío)" si no hay productos válidos
+        if (!hasProducts) {
+            previewProductosBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">(Vacío)</td></tr>';
+        }
+
+        previewTotal.textContent = formatCurrency(granTotal);
     }
 
-    // --- LÓGICA DE ESCUCHA DE EVENTOS (MODIFICADA) ---
-    function attachFormListener() {
-      form.removeEventListener("input", updatePreview);
-      form.addEventListener("input", updatePreview);
+    // --- LÓGICA DE ESCUCHA DE EVENTOS ---
+    function attachFormListeners() {
+        // Escuchar cambios en todo el formulario para actualizar la vista previa
+        form.addEventListener('input', updatePreview);
 
-      // Añadir listeners de stock a las filas existentes
-      document.querySelectorAll(".detalle-form").forEach((row) => {
-        addStockListener(row);
-      });
+        // Añadir listeners de stock a las filas existentes al cargar
+        document.querySelectorAll('.detalle-form').forEach(row => {
+            addStockListener(row);
+        });
     }
 
+    // Inicializar listeners al cargar la página
     updateRemoveButtonListeners();
-    attachFormListener();
-    updatePreview();
-  });
+    attachFormListeners();
+    updatePreview(); // Llamada inicial para la vista previa
+});
 </script>
 {% endblock extra_js %}

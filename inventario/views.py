@@ -9,7 +9,8 @@ from .forms import ProductoForm
 @login_required
 def inventario(request):
     productos = Producto.objects.all().order_by('nombre')
-    return render(request, 'inventario/inventario.html', {'productos': productos}) # Ajustado
+    # Corregido: 'inventario/inventario.html' a 'inventario/lista.html' si renombraste la plantilla, o mantenlo si no. Asumo que se llama inventario.html
+    return render(request, 'inventario/inventario.html', {'productos': productos})
 
 @login_required
 def crear_producto(request):
@@ -19,10 +20,12 @@ def crear_producto(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Producto creado.")
-            return redirect('inventario:lista') # Ajustado
+            # Corregido: Usar el nombre de URL correcto
+            return redirect('inventario:lista')
     else:
         form = ProductoForm()
-    return render(request, 'inventario/crear_producto.html', {'form': form, 'titulo': titulo}) # Ajustado
+    # Corregido: 'inventario/crear_producto.html'
+    return render(request, 'inventario/crear_producto.html', {'form': form, 'titulo': titulo})
 
 @login_required
 def editar_producto(request, pk):
@@ -33,10 +36,12 @@ def editar_producto(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, "Producto actualizado.")
-            return redirect('inventario:lista') # Ajustado
+             # Corregido: Usar el nombre de URL correcto
+            return redirect('inventario:lista')
     else:
         form = ProductoForm(instance=producto)
-    return render(request, 'inventario/editar_producto.html', {'form': form, 'producto': producto, 'titulo': titulo}) # Ajustado
+    # Corregido: 'inventario/editar_producto.html'
+    return render(request, 'inventario/editar_producto.html', {'form': form, 'producto': producto, 'titulo': titulo})
 
 @login_required
 def eliminar_producto(request, pk):
@@ -45,14 +50,16 @@ def eliminar_producto(request, pk):
         nombre_producto = producto.nombre
         producto.delete()
         messages.success(request, f"Producto '{nombre_producto}' eliminado.")
-        return redirect('inventario:lista') # Ajustado
-    # Reutiliza la plantilla de core para confirmar eliminación
-    return render(request, 'core/confirmar_eliminar.html', { # Ajustado
+        # Corregido: Usar el nombre de URL correcto
+        return redirect('inventario:lista')
+    # Reutiliza la plantilla de core para confirmar eliminación (Correcto)
+    return render(request, 'core/confirmar_eliminar.html', {
         'object': producto,
-        'cancel_url': reverse('inventario:lista') # Ajustado
+         # Corregido: Usar el nombre de URL correcto
+        'cancel_url': reverse('inventario:lista')
     })
 
-# --- API para JavaScript ---
+# --- API para JavaScript --- (Sin cambios necesarios aquí)
 @login_required
 def get_stock_producto(request, producto_id):
     try:

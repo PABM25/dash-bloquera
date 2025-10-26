@@ -1,3 +1,4 @@
+{# core/templates/core/base.html #}
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
@@ -16,12 +17,14 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
+    {# Corregido: La ruta debe ser relativa a la carpeta 'static' dentro de STATICFILES_DIRS #}
     <link rel="stylesheet" href="{% static 'app/css/style.css' %}?v=1.3" />
 
     {% block extra_head %} {% endblock extra_head %}
   </head>
   <body>
     <div class="d-flex" id="wrapper">
+      {# Sidebar #}
       <div id="sidebar-wrapper">
         <div class="sidebar-heading text-center py-4 fs-5 fw-bold">
           <i class="fas fa-hard-hat me-2"></i> V&G SPA
@@ -29,7 +32,7 @@
         <div class="list-group list-group-flush px-3">
           {% block sidebar_menu %} {% if user.is_authenticated %}
           <a
-            href="{% url 'core:home' %}"
+            href="{% url 'core:home' %}" {# Correcto #}
             class="list-group-item list-group-item-action d-flex align-items-center {% if request.resolver_match.view_name == 'core:home' %}active{% endif %}"
           >
             <i class="fas fa-tachometer-alt me-2"></i>Dashboard
@@ -39,20 +42,20 @@
             >Ventas</span
           >
           <a
-            href="{% url 'ventas:crear_orden' %}"
+            href="{% url 'ventas:crear_orden' %}" {# Corregido namespace #}
             class="list-group-item list-group-item-action d-flex align-items-center {% if request.resolver_match.view_name == 'ventas:crear_orden' %}active{% endif %}"
           >
             <i class="fas fa-file-invoice me-2"></i>Crear Comprobante
           </a>
           <a
-            href="{% url 'ventas:lista_ordenes' %}"
+            href="{% url 'ventas:lista_ordenes' %}" {# Corregido namespace #}
             class="list-group-item list-group-item-action d-flex align-items-center {% if request.resolver_match.view_name == 'ventas:lista_ordenes' %}active{% endif %}"
           >
             <i class="fas fa-history me-2"></i>Ver Órdenes
           </a>
           <a
-            href="{% url 'inventario:lista' %}"
-            class="list-group-item list-group-item-action d-flex align-items-center {% if request.resolver_match.view_name == 'inventario:lista' %}active{% endif %}"
+            href="{% url 'inventario:lista' %}" {# Corregido namespace y nombre #}
+            class="list-group-item list-group-item-action d-flex align-items-center {% if request.resolver_match.url_name == 'lista' and request.resolver_match.namespace == 'inventario' %}active{% endif %}"
           >
             <i class="fas fa-boxes me-2"></i>Inventario
           </a>
@@ -61,25 +64,25 @@
             >Personal</span
           >
           <a
-            href="{% url 'recursos_humanos:crear_trabajador' %}"
+            href="{% url 'recursos_humanos:crear_trabajador' %}" {# Corregido namespace #}
             class="list-group-item list-group-item-action d-flex align-items-center {% if request.resolver_match.view_name == 'recursos_humanos:crear_trabajador' %}active{% endif %}"
           >
             <i class="fas fa-user-plus me-2"></i>Nuevo Trabajador
           </a>
           <a
-            href="{% url 'recursos_humanos:lista_trabajadores' %}"
+            href="{% url 'recursos_humanos:lista_trabajadores' %}" {# Corregido namespace #}
             class="list-group-item list-group-item-action d-flex align-items-center {% if request.resolver_match.view_name == 'recursos_humanos:lista_trabajadores' %}active{% endif %}"
           >
             <i class="fas fa-users me-2"></i>Lista Trabajadores
           </a>
           <a
-            href="{% url 'recursos_humanos:asistencia_manual' %}"
+            href="{% url 'recursos_humanos:asistencia_manual' %}" {# Corregido namespace #}
             class="list-group-item list-group-item-action d-flex align-items-center {% if request.resolver_match.view_name == 'recursos_humanos:asistencia_manual' %}active{% endif %}"
           >
             <i class="fa-solid fa-list-check me-2"></i>Asistencia Manual
           </a>
           <a
-            href="{% url 'recursos_humanos:calcular_salario' %}"
+            href="{% url 'recursos_humanos:calcular_salario' %}" {# Corregido namespace #}
             class="list-group-item list-group-item-action d-flex align-items-center {% if request.resolver_match.view_name == 'recursos_humanos:calcular_salario' %}active{% endif %}"
           >
             <i class="fas fa-calculator me-2"></i>Calcular Salarios
@@ -89,26 +92,26 @@
             >Finanzas</span
           >
           <a
-            href="{% url 'finanzas:registrar_gasto' %}"
+            href="{% url 'finanzas:registrar_gasto' %}" {# Corregido namespace #}
             class="list-group-item list-group-item-action d-flex align-items-center {% if request.resolver_match.view_name == 'finanzas:registrar_gasto' %}active{% endif %}"
           >
             <i class="fas fa-dollar-sign me-2"></i>Registrar Gasto
           </a>
           <a
-            href="{% url 'finanzas:lista_gastos' %}"
+            href="{% url 'finanzas:lista_gastos' %}" {# Corregido namespace #}
             class="list-group-item list-group-item-action d-flex align-items-center {% if request.resolver_match.view_name == 'finanzas:lista_gastos' %}active{% endif %}"
           >
             <i class="fas fa-receipt me-2"></i>Lista de Gastos
           </a>
           {% else %}
           <a
-            href="{% url 'core:login' %}"
+            href="{% url 'core:login' %}" {# Correcto #}
             class="list-group-item list-group-item-action d-flex align-items-center {% if request.resolver_match.view_name == 'core:login' %}active{% endif %}"
           >
             <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
           </a>
           <a
-            href="{% url 'core:register' %}"
+            href="{% url 'core:register' %}" {# Correcto #}
             class="list-group-item list-group-item-action d-flex align-items-center {% if request.resolver_match.view_name == 'core:register' %}active{% endif %}"
           >
             <i class="fas fa-user-plus me-2"></i>Registrarse
@@ -117,6 +120,7 @@
         </div>
       </div>
 
+      {# Page Content #}
       <div id="page-content-wrapper" class="w-100">
         <nav
           class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm"
@@ -127,7 +131,13 @@
               <i class="fas fa-bars"></i>
             </button>
             {% else %}
-            <span></span> {% endif %}
+            <span></span> {# Espacio reservado para mantener alineación #}
+            {% endif %}
+
+             {# Navbar Toggler (para móvil) #}
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
               <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
@@ -150,16 +160,16 @@
                     aria-labelledby="navbarDropdown"
                   >
                     <li>
-                      <a class="dropdown-item" href="{% url 'core:user_settings' %}"
+                      <a class="dropdown-item" href="{% url 'core:user_settings' %}" {# Correcto #}
                         ><i class="fas fa-gear me-1"></i> Configuración</a
                       >
                     </li>
                     <li><hr class="dropdown-divider" /></li>
                     <li>
                       <form
-                        action="{% url 'core:logout' %}"
+                        action="{% url 'core:logout' %}" {# Correcto #}
                         method="post"
-                        class="d-inline"
+                        class="d-inline" {# No necesita d-inline en dropdown #}
                       >
                         {% csrf_token %}
                         <button type="submit" class="dropdown-item">
@@ -171,20 +181,27 @@
                 </li>
                 {% else %}
                 <li class="nav-item">
-                  <a class="nav-link" href="{% url 'core:login' %}">
+                  <a class="nav-link" href="{% url 'core:login' %}"> {# Correcto #}
                     <i class="fas fa-sign-in-alt me-1"></i> Iniciar Sesión
                   </a>
                 </li>
+                 <li class="nav-item">
+                   <a class="nav-link" href="{% url 'core:register' %}"> {# Correcto #}
+                     <i class="fas fa-user-plus me-1"></i> Registrarse
+                   </a>
+                 </li>
                 {% endif %}
               </ul>
             </div>
           </div>
         </nav>
 
+        {# Contenido Principal #}
         <div class="container-fluid py-4">
+          {# Mensajes Flash #}
           {% if messages %}
           <div class="row">
-            <div class="col-md-10 offset-md-1">
+            <div class="col-md-10 offset-md-1 col-lg-8 offset-lg-2"> {# Ajustado para mejor visualización #}
               {% for message in messages %}
               <div
                 class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show"
@@ -203,12 +220,17 @@
           </div>
           {% endif %}
 
+          {# Bloque de contenido específico de la página #}
           <div id="contenido">
-            {% block contenido %} {% endblock contenido %}
+            {% block contenido %}
+            {# El contenido de cada página hija irá aquí #}
+            {% endblock contenido %}
           </div>
-        </div>
-      </div>
-    </div>
+        </div> {# Fin container-fluid py-4 #}
+      </div> {# Fin page-content-wrapper #}
+    </div> {# Fin wrapper #}
+
+    {# Scripts JS #}
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 
@@ -225,15 +247,35 @@
               });
           }
 
-          // Esconder el sidebar en pantallas pequeñas si no está logueado
-          {% if not user.is_authenticated %}
-              if (window.innerWidth < 768) {
-                  wrapper.classList.add('toggled');
+          // Esconder el sidebar por defecto en pantallas pequeñas (móviles/tablets)
+          // Independientemente de si está logueado o no, para mejorar UX móvil.
+          if (window.innerWidth < 992) { // Usar 992px (breakpoint lg de Bootstrap) como referencia
+              if (!wrapper.classList.contains('toggled')) {
+                   wrapper.classList.add('toggled');
               }
-          {% endif %}
+          }
+
+          // Opcional: Volver a mostrar si la ventana se agranda
+          window.addEventListener('resize', function() {
+              if (window.innerWidth >= 992) {
+                  if (wrapper.classList.contains('toggled')) {
+                       // Solo quitar 'toggled' si estamos en pantalla grande
+                       // Podrías querer que se mantenga oculto si el usuario lo ocultó manualmente
+                       // Esta lógica simple lo reabre al agrandar.
+                       // wrapper.classList.remove('toggled');
+                  }
+              } else {
+                   if (!wrapper.classList.contains('toggled')) {
+                        // Ocultar automáticamente si se achica a menos de lg
+                        // wrapper.classList.add('toggled');
+                   }
+              }
+          });
       });
     </script>
 
-    {% block extra_js %} {% endblock extra_js %}
+    {% block extra_js %}
+    {# Scripts adicionales de cada página hija #}
+    {% endblock extra_js %}
   </body>
 </html>

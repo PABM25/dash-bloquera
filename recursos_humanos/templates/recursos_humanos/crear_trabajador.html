@@ -24,20 +24,20 @@
 
         <div class="col-lg-6 col-md-12">
             <h5 class="text-center fw-bold mb-3" style="color: #BF2642;">Vista Previa de Tarjeta de Empleado</h5>
-            
+
             <div id="preview-card" class="card shadow-sm p-4 mx-auto" style="max-width: 350px;">
                 <div class="text-center mb-4">
                     <i class="fas fa-user-circle text-muted" style="font-size: 4rem;"></i>
                 </div>
-                
+
                 <h4 class="fw-bold text-center mb-4" id="preview-nombre">NOMBRE COMPLETO</h4>
-                
+
                 <div class="info-line d-flex align-items-center mb-2">
                     <i class="fas fa-id-card-alt me-2" style="color: #BF2642;"></i>
                     <span class="fw-bold me-2">RUT:</span>
                     <span id="preview-rut">N/A</span>
                 </div>
-                
+
                 <div class="info-line d-flex align-items-center mb-2">
                     <i class="fas fa-briefcase me-2" style="color: #BF2642;"></i>
                     <span class="fw-bold me-2">Cargo:</span>
@@ -49,12 +49,13 @@
                     <span class="fw-bold me-2">Teléfono:</span>
                     <span id="preview-telefono">N/A</span>
                 </div>
-                
-                <div class="info-line d-flex align-items-center mb-2">
+
+                {# Eliminado: Línea de Fecha de Ingreso que no está en el formulario #}
+                {# <div class="info-line d-flex align-items-center mb-2">
                     <i class="fas fa-calendar-alt me-2" style="color: #BF2642;"></i>
                     <span class="fw-bold me-2">Ingreso:</span>
                     <span id="preview-fecha-ingreso">N/A</span>
-                </div>
+                </div> #}
 
                 <div class="info-line d-flex align-items-center mb-2">
                     <i class="fas fa-map-marker-alt me-2" style="color: #BF2642;"></i>
@@ -82,11 +83,11 @@
         // Mapeo de IDs de inputs del formulario a IDs de la vista previa
         // IMPORTANTE: AJUSTA LOS ID DE LA IZQUIERDA ('id_...') a los nombres de campo de tu formulario Django
         const fieldMap = {
-            'id_nombre': 'preview-nombre', // Ejemplo: 'nombre_completo' es el campo
-            'id_rut': 'preview-rut', 
+            'id_nombre': 'preview-nombre', // Ejemplo: 'nombre' es el campo en el form
+            'id_rut': 'preview-rut',
             'id_cargo': 'preview-cargo',
             'id_telefono': 'preview-telefono',
-            'id_fecha_ingreso': 'preview-fecha-ingreso', 
+            // 'id_fecha_ingreso': 'preview-fecha-ingreso', // <--- Eliminado
             'id_direccion': 'preview-direccion'
             // Añade o modifica los IDs según tu formulario
         };
@@ -95,17 +96,17 @@
             for (const inputId in fieldMap) {
                 const inputElement = document.getElementById(inputId);
                 const previewElement = document.getElementById(fieldMap[inputId]);
-                
+
                 if (inputElement && previewElement) {
                     let value = inputElement.value;
 
-                    // Si es un SELECT (ej: Cargo), mostramos el texto visible en lugar del valor interno
+                    // Si es un SELECT (ej: Cargo, tipo_proyecto), mostramos el texto visible en lugar del valor interno
                     if (inputElement.tagName === 'SELECT' && inputElement.selectedIndex !== -1) {
                         value = inputElement.options[inputElement.selectedIndex].text;
                     }
-                    
+
                     // Manejo especial para el nombre completo (si está vacío, usar un placeholder)
-                    if (inputId === 'id_nombre_completo') {
+                    if (inputId === 'id_nombre') { // Asegúrate que el ID sea 'id_nombre'
                         previewElement.textContent = value.toUpperCase() || 'NOMBRE COMPLETO';
                     } else {
                         // Para los demás campos, mostrar el valor o 'N/A'

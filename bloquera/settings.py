@@ -1,3 +1,4 @@
+# bloquera/settings.py
 """
 Django settings for bloquera project.
 
@@ -21,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^5o5g+pxuhyryu*fk*sma3s6=28%j3&t^&$l_9jk*%70y$t$ru'
+SECRET_KEY = 'django-insecure-^5o5g+pxuhyryu*fk*sma3s6=28%j3&t^&$l_9jk*%70y$t$ru' # Mantén tu propia clave secreta
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -33,11 +34,11 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     # Mis Apps (usar nombres de clase AppConfig si existen)
-    'core', # O 'core.apps.CoreConfig'
-    'inventario',
-    'recursos_humanos',
-    'ventas',
-    'finanzas',
+    'core.apps.CoreConfig', # Mejor especificar AppConfig
+    'inventario.apps.InventarioConfig',
+    'recursos_humanos.apps.RecursosHumanosConfig',
+    'ventas.apps.VentasConfig',
+    'finanzas.apps.FinanzasConfig',
 
     # Django Apps
     'django.contrib.admin',
@@ -50,7 +51,7 @@ INSTALLED_APPS = [
     # Third Party Apps
     'crispy_forms',
     'crispy_bootstrap5',
-    'django.contrib.humanize',
+    'django.contrib.humanize', # Para filtros como intcomma
 ]
 
 
@@ -72,7 +73,7 @@ TEMPLATES = [
         # SI MOVES LAS PLANTILLAS a /templates/ en la raíz:
         # 'DIRS': [BASE_DIR / 'templates'],
         # SI LAS DEJAS DENTRO DE CADA APP (e.g., core/templates/core/):
-        'DIRS': [], # Dejar vacío si usas APP_DIRS
+        'DIRS': [BASE_DIR / 'templates'], # Busca también en una carpeta 'templates' raíz si existe
         'APP_DIRS': True, # Django buscará en app_name/templates/
         'OPTIONS': {
             'context_processors': [
@@ -121,9 +122,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
+# Cambiado a Español - Chile
+LANGUAGE_CODE = 'es-cl'
+TIME_ZONE = 'America/Santiago' # Zona horaria de Chile
 
 USE_I18N = True
 
@@ -133,18 +134,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 
-# SI CENTRALIZAS ESTÁTICOS en /static/ en la raíz:
-# STATICFILES_DIRS = [BASE_DIR / "static"]
+# Directorio donde collectstatic reunirá los archivos estáticos para producción
+STATIC_ROOT = BASE_DIR / 'staticfiles_collected'
+
 # SI LOS DEJAS EN app_name/static/ (recomendado con APP_DIRS=True en TEMPLATES):
+# Y tienes un directorio estático general DENTRO de la app 'core'
 STATICFILES_DIRS = [
-    # Puedes mantener tu configuración original si moviste 'app/static/app/' a 'core/static/core/'
-     BASE_DIR / "core" / "static", # Asumiendo que moviste los estáticos generales a core
+     BASE_DIR / "core" / "static", # Directorio estático general dentro de 'core'
 ]
-# Si usas `collectstatic`, define STATIC_ROOT
-# STATIC_ROOT = BASE_DIR / 'staticfiles_collected'
 
 
 # Default primary key field type
@@ -153,7 +152,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-# --- URLs de Login/Logout (Redirigen a 'core' ahora) ---
+# --- URLs de Login/Logout (Correctas, apuntan a 'core') ---
 LOGIN_URL = 'core:login'
 LOGIN_REDIRECT_URL = 'core:home'
 LOGOUT_REDIRECT_URL = 'core:login'
