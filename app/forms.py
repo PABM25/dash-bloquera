@@ -1,7 +1,53 @@
+# app/forms.py
 from django import forms
 from .models import *
 from django.forms.models import inlineformset_factory
+# --- Importaciones Añadidas ---
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm 
+from django.contrib.auth.models import User
+# --- FIN ---
 
+# ... (RegistroForm y otros formularios existentes) ...
+class RegistroForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']
+        labels = {
+            'username': 'Nombre de Usuario',
+            'first_name': 'Nombre',
+            'last_name': 'Apellido',
+            'email': 'Correo Electrónico',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
+            field.help_text = '' # Ocultar ayuda de contraseña
+
+# --- NUEVO FORMULARIO ---
+class EditProfileForm(UserChangeForm):
+    # Omitimos la contraseña aquí, Django tiene una vista separada para eso
+    password = None 
+
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']
+        labels = {
+            'username': 'Nombre de Usuario',
+            'first_name': 'Nombre',
+            'last_name': 'Apellido',
+            'email': 'Correo Electrónico',
+        }
+        widgets = { # Asegurar que usen las clases de Bootstrap
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
+# --- FIN DE LO NUEVO ---
+
+# ... (ProductoForm y el resto de formularios existentes) ...
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
@@ -16,7 +62,6 @@ class ProductoForm(forms.ModelForm):
 class OrdenCompraForm(forms.ModelForm):
     class Meta:
         model = OrdenCompra
-        # ACTUALIZADO: Quitamos numero_venta
         fields = ['cliente', 'direccion', 'rut']
         widgets = {
             'cliente': forms.TextInput(attrs={'class': 'form-control'}),
@@ -46,7 +91,7 @@ DetalleOrdenFormSet = inlineformset_factory(
 class TrabajadorForm(forms.ModelForm):
     class Meta:
         model = Trabajador
-        fields = ['nombre', 'rut', 'direccion', 'telefono', 'email', 'tipo_proyecto', 'cargo']
+        fields = ['nombre', 'rut', 'direccion', 'telefono', 'email', 'tipo_proyecto', 'cargo', 'salario_por_dia']
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'rut': forms.TextInput(attrs={'class': 'form-control'}),
@@ -55,6 +100,7 @@ class TrabajadorForm(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'tipo_proyecto': forms.Select(attrs={'class': 'form-control'}),
             'cargo': forms.TextInput(attrs={'class': 'form-control'}),
+            'salario_por_dia': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 
 class AsistenciaManualForm(forms.Form):

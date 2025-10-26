@@ -9,13 +9,17 @@
                     <h2 class="mb-0">Resultado de la Asistencia</h2>
                 </div>
                 <div class="card-body">
-                    {% if mensaje %}
-                        <h4 class="text-success">{{ mensaje }}</h4>
-                        <p>Trabajador: {{ trabajador.nombre }}</p>
-                    {% elif error %}
-                        <h4 class="text-danger">{{ error }}</h4>
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
                     {% endif %}
-                    <a href="{% url 'marcar_asistencia' %}" class="btn btn-primary mt-3">Escanear otro QR</a>
+                    
+                    {% if not messages %}
+                        <h4 class="text-success">Asistencia registrada.</h4>
+                    {% endif %}
+                    
+                    <a href="{% url 'asistencia_manual' %}" class="btn btn-primary mt-3">Registrar otra asistencia</a>
                 </div>
             </div>
         </div>

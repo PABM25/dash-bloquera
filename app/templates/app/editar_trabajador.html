@@ -1,0 +1,110 @@
+{% extends 'app/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Editar Trabajador{% endblock title %}
+
+{% block contenido %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-lg-6 col-md-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header card-header-branding">
+                    <h2 class="mb-0">Editando a: {{ trabajador.nombre }}</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-principal btn-lg">Guardar Cambios</button>
+                            <a href="{% url 'lista_trabajadores' %}" class="btn btn-secondary btn-lg">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 col-md-12">
+             <h5 class="text-center fw-bold mb-3" style="color: #BF2642;">Vista Previa de Tarjeta de Empleado</h5>
+            
+            <div id="preview-card" class="card shadow-sm p-4 mx-auto" style="max-width: 350px;">
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-circle text-muted" style="font-size: 4rem;"></i>
+                </div>
+                
+                <h4 class="fw-bold text-center mb-4" id="preview-nombre">{{ form.nombre.value|default:"NOMBRE COMPLETO"|upper }}</h4>
+                
+                <div class="info-line d-flex align-items-center mb-2">
+                    <i class="fas fa-id-card-alt me-2" style="color: #BF2642;"></i>
+                    <span class="fw-bold me-2">RUT:</span>
+                    <span id="preview-rut">{{ form.rut.value|default:"N/A" }}</span>
+                </div>
+                
+                <div class="info-line d-flex align-items-center mb-2">
+                    <i class="fas fa-briefcase me-2" style="color: #BF2642;"></i>
+                    <span class="fw-bold me-2">Cargo:</span>
+                    <span id="preview-cargo">{{ form.cargo.value|default:"N/A" }}</span>
+                </div>
+
+                <div class="info-line d-flex align-items-center mb-2">
+                    <i class="fas fa-phone me-2" style="color: #BF2642;"></i>
+                    <span class="fw-bold me-2">Teléfono:</span>
+                    <span id="preview-telefono">{{ form.telefono.value|default:"N/A" }}</span>
+                </div>
+                
+                <div class="info-line d-flex align-items-center mb-2">
+                    <i class="fas fa-map-marker-alt me-2" style="color: #BF2642;"></i>
+                    <span class="fw-bold me-2">Dirección:</span>
+                    <span id="preview-direccion">{{ form.direccion.value|default:"N/A" }}</span>
+                </div>
+
+                <hr class="my-3">
+
+                <div class="small text-center text-muted">
+                    Construcciones V&G
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock contenido %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+
+        const fieldMap = {
+            'id_nombre': 'preview-nombre',
+            'id_rut': 'preview-rut', 
+            'id_cargo': 'preview-cargo',
+            'id_telefono': 'preview-telefono',
+            'id_direccion': 'preview-direccion'
+        };
+
+        const updatePreview = () => {
+            for (const inputId in fieldMap) {
+                const inputElement = document.getElementById(inputId);
+                const previewElement = document.getElementById(fieldMap[inputId]);
+                
+                if (inputElement && previewElement) {
+                    let value = inputElement.value;
+
+                    if (inputElement.tagName === 'SELECT' && inputElement.selectedIndex !== -1) {
+                        value = inputElement.options[inputElement.selectedIndex].text;
+                    }
+                    
+                    if (inputId === 'id_nombre') {
+                        previewElement.textContent = value.toUpperCase() || 'NOMBRE COMPLETO';
+                    } else {
+                        previewElement.textContent = value || 'N/A';
+                    }
+                }
+            }
+        };
+
+        form.addEventListener('input', updatePreview);
+        updatePreview();
+    });
+</script>
+{% endblock extra_js %}

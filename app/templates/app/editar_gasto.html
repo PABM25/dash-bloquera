@@ -1,17 +1,23 @@
 {% extends 'app/base.html' %}
-{% load crispy_forms_tags %} {% block contenido %}
+{% load crispy_forms_tags %}
+
+{% block title %}Editar Gasto{% endblock title %}
+
+{% block contenido %}
 <div class="container-fluid mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h2 class="mb-0">Registrar Gasto</h2>
+                    <h2 class="mb-0">Editar Gasto</h2>
                 </div>
                 <div class="card-body">
                     <form method="post">
                         {% csrf_token %}
-                        {{ form|crispy }} <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">Guardar Gasto</button>
+                        {{ form|crispy }}
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Guardar Cambios</button>
+                            <a href="{% url 'lista_gastos' %}" class="btn btn-secondary btn-lg">Cancelar</a>
                         </div>
                     </form>
                 </div>

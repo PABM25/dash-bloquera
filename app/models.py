@@ -2,6 +2,7 @@
 from django.db import models
 from datetime import date
 
+# ... (Modelo Producto y OrdenCompra sin cambios) ...
 class Producto(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
     stock = models.PositiveIntegerField(default=0)
@@ -78,12 +79,22 @@ class Trabajador(models.Model):
     tipo_proyecto = models.CharField(max_length=20, choices=TIPO_PROYECTO, default='CONSTRUCTORA')
     cargo = models.CharField(max_length=100, blank=True, null=True)
     
+    # --- CAMPO AÑADIDO ---
+    salario_por_dia = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0, 
+        help_text="Salario a pagar por día trabajado"
+    )
+    # --- FIN DE LO AÑADIDO ---
+
     def __str__(self):
         return self.nombre
         
     class Meta:
         verbose_name_plural = "Trabajadores"
 
+# ... (Modelo Asistencia y Gasto sin cambios) ...
 class Asistencia(models.Model):
     TIPO_PROYECTO = [
         ('CONSTRUCTORA', 'Constructora'),
