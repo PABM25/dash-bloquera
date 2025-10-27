@@ -1,12 +1,12 @@
-{% extends 'core/base.html' %}
-{% load static %}
+{% load static %} {# Necesario para {% static %} #}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Orden {{ orden.numero_venta|default:orden.id }}</title>
     <style>
-        body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: white; }
+        /* Estilos incrustados directamente */
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: white; color: #000; }
         .ticket {
             width: 302px; /* Aprox 80mm a 96dpi */
             font-size: 11px;
@@ -14,11 +14,11 @@
             padding: 10px;
             margin: 0;
             background: white;
-            border: 1px solid #ddd; /* Borde leve para delimitar en JPG */
+            /* border: 1px solid #ddd; /* Opcional: Borde leve para delimitar en JPG */
             box-sizing: border-box;
         }
         .logo-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .logo-img { width: auto; height: 50px; }
+        .logo-img { width: auto; height: 50px; display: block; } /* display: block puede ayudar */
         .empresa { text-align: left; font-size: 9px; line-height: 1.2; }
         .empresa strong { font-size: 9px; font-weight: bold; }
         .orden-info { margin-bottom: 8px; font-size: 10px; text-align: left; }
@@ -26,7 +26,7 @@
         strong { font-weight: bold; }
         /* Tabla */
         table.productos { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 4px; }
-        th, td { border: 1px solid black; padding: 2px; text-align: center; }
+        th, td { border: 1px solid black; padding: 2px; text-align: center; word-wrap: break-word; } /* break-word para nombres largos */
         th { font-weight: bold; background-color: #f0f0f0; }
         table.productos td:first-child, table.productos th:first-child { text-align: left; }
         /* Total */
@@ -41,7 +41,8 @@
     <div class="ticket">
         <div class="logo-container">
             <div class="logo">
-                 <img src="http://{{ request.get_host }}{% static 'app/img/logo.png' %}" alt="Logo" class="logo-img">
+                 {# Construir URL absoluta para la imagen estática #}
+                 <img src="{{ request.scheme }}://{{ request.get_host }}{% static 'app/img/logo.png' %}" alt="Logo" class="logo-img">
             </div>
             <div class="empresa">
                 <strong>CONSTRUCCIONES V & G LIZ CASTILLO GARCIA SPA</strong><br>
@@ -84,6 +85,7 @@
         </table>
         <hr>
         <div class="total">
+            {# Cuidado con formatear a 0 si necesitas decimales exactos #}
             <strong>Total a Pagar: ${{ orden.total|floatformat:0 }}</strong>
         </div>
         <hr>

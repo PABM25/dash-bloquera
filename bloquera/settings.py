@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     # Third Party Apps
     'crispy_forms',
     'crispy_bootstrap5',
-    'django.contrib.humanize', # Para filtros como intcomma
+    'django.contrib.humanize'
 ]
 
 
