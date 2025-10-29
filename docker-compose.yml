@@ -1,49 +1,60 @@
+# Versión de la sintaxis de Docker Compose
 version: '3.8'
 
+# Definición de los servicios (contenedores)
 services:
-  # Servicio de Base de Datos (PostgreSQL)
+  
+  # 1. Servicio de Base de Datos (PostgreSQL)
   db:
-    image: postgres:15
+    image: postgres:15 # Usa la imagen oficial de Postgres 15
     volumes:
+      # 'postgres_data' es un volumen nombrado (definido abajo)
+      # Persiste los datos de la BD incluso si el contenedor se destruye.
       - postgres_data:/var/lib/postgresql/data
     environment:
-      # Estas variables deben coincidir con tu settings.py
+      # Estas variables crean la BD y el usuario al iniciar
       - POSTGRES_DB=constructora
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=Pabm261996!*
-    restart: always
+    restart: always # Siempre reiniciar si falla
 
-  # Servicio de la Aplicación (Django + Gunicorn)
+  # 2. Servicio de la Aplicación (Django + Gunicorn)
   web:
-    build: .
+    build: . # Construye la imagen usando el 'dockerfile' en este directorio
     volumes:
-      - static_volume:/app/staticfiles_collected # Comparte estáticos con Nginx
-    # Pasa las variables de entorno a settings.py
+      # Comparte el volumen de estáticos con Nginx
+      - static_volume:/app/staticfiles_collected
     environment:
+      # Pasa variables de entorno a settings.py
       - DJANGO_SECRET_KEY=django-insecure-^5o5g+pxuhyryu*fk*sma3s6=28%j3&t^&$l_9jk*%70y$t$ru
-      - DJANGO_DEBUG=False
-      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,tu-dominio.com # Cambia 'tu-dominio.com' por tu IP o dominio real
-      - DB_HOST=db  # Importante: 'db' es el nombre de este servicio
+      - DJANGO_DEBUG=False # ¡Importante! Desactivar DEBUG en producción
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,tu-dominio.com
+      # Configuración de la BD (apunta al servicio 'db')
+      - DB_HOST=db # 'db' es el nombre del servicio de base de datos
       - DB_NAME=constructora
       - DB_USER=postgres
       - DB_PASS=Pabm261996!*
       - DB_PORT=5432
     depends_on:
-      - db # Espera a que la BD esté lista
+      - db # Espera a que el servicio 'db' esté listo antes de iniciar 'web'
     restart: always
 
-  # Servicio del Proxy Inverso (Nginx)
+  # 3. Servicio del Proxy Inverso (Nginx)
   nginx:
-    image: nginx:latest
+    image: nginx:latest # Usa la imagen oficial de Nginx
     ports:
-      - "80:80" # Expone el puerto 80 público
+      # Mapea el puerto 80 del HOST (tu máquina) al puerto 80 del CONTENEDOR
+      - "80:80"
     volumes:
-      - static_volume:/app/static # Monta los archivos estáticos
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf # Usa nuestra config
+      # Monta el volumen de estáticos (solo lectura)
+      - static_volume:/app/static
+      # Reemplaza la configuración por defecto de Nginx con la nuestra
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      - web
+      - web # Espera a que el servicio 'web' (Django) esté listo
     restart: always
 
+# Definición de los volúmenes nombrados
 volumes:
   postgres_data:
   static_volume:

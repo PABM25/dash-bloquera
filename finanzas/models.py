@@ -1,10 +1,16 @@
 # finanzas/models.py
+"""
+Define los modelos de la base de datos para la aplicación 'finanzas'.
+"""
 from django.db import models
 from datetime import date
-# Importar Trabajador si necesitas relacionarlo explícitamente, aunque no parece necesario aquí
-# from recursos_humanos.models import Trabajador
 
 class Gasto(models.Model):
+    """
+    Representa un gasto operativo o de salario.
+    """
+    
+    # Opciones predefinidas para el campo 'categoria'
     CATEGORIAS_GASTO = [
         ('SALARIO', 'Salario'),
         ('MATERIAL', 'Materiales de Construcción'),
@@ -13,21 +19,27 @@ class Gasto(models.Model):
         ('ADMIN', 'Gastos Administrativos'),
         ('OTRO', 'Otro Gasto'),
     ]
-    # Reutilizar TIPO_PROYECTO de Trabajador (importar o redefinir)
+    
+    # Opciones predefinidas para el proyecto (duplicadas de 'recursos_humanos'
+    # para mantener la app desacoplada, aunque podría importarse).
     TIPO_PROYECTO = [
         ('CONSTRUCTORA', 'Constructora'),
         ('BLOQUERA', 'Bloquera'),
     ]
+    
     fecha = models.DateField(default=date.today)
     categoria = models.CharField(max_length=50, choices=CATEGORIAS_GASTO, default='OTRO')
-    descripcion = models.TextField() # Cambiado a TextField para más espacio
+    descripcion = models.TextField() # Permite descripciones largas
     monto = models.DecimalField(max_digits=10, decimal_places=2)
     tipo_proyecto = models.CharField(max_length=20, choices=TIPO_PROYECTO, default='CONSTRUCTORA')
 
     def __str__(self):
-        # Usar f-string para formateo más limpio
+        """
+        Representación en texto (ej. "29-10-2025 - Salario - $500.000").
+        Usa formato 'f-string' y formateo de moneda (:,.0f).
+        """
         return f"{self.fecha.strftime('%d-%m-%Y')} - {self.get_categoria_display()} - ${self.monto:,.0f}"
 
     class Meta:
         verbose_name_plural = "Gastos"
-        ordering = ['-fecha'] # Ordenar por defecto
+        ordering = ['-fecha'] # Ordenar por defecto (más nuevos primero)

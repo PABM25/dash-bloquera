@@ -24,55 +24,26 @@
 
         <div class="col-lg-6 col-md-12">
             <h5 class="text-center fw-bold mb-3" style="color: #BF2642;">Vista Previa de Tarjeta de Empleado</h5>
-
+            
             <div id="preview-card" class="card shadow-sm p-4 mx-auto" style="max-width: 350px;">
                 <div class="text-center mb-4">
                     <i class="fas fa-user-circle text-muted" style="font-size: 4rem;"></i>
                 </div>
-
                 <h4 class="fw-bold text-center mb-4" id="preview-nombre">NOMBRE COMPLETO</h4>
-
                 <div class="info-line d-flex align-items-center mb-2">
                     <i class="fas fa-id-card-alt me-2" style="color: #BF2642;"></i>
                     <span class="fw-bold me-2">RUT:</span>
                     <span id="preview-rut">N/A</span>
                 </div>
-
                 <div class="info-line d-flex align-items-center mb-2">
                     <i class="fas fa-briefcase me-2" style="color: #BF2642;"></i>
                     <span class="fw-bold me-2">Cargo:</span>
                     <span id="preview-cargo">N/A</span>
                 </div>
-
-                <div class="info-line d-flex align-items-center mb-2">
-                    <i class="fas fa-phone me-2" style="color: #BF2642;"></i>
-                    <span class="fw-bold me-2">Teléfono:</span>
-                    <span id="preview-telefono">N/A</span>
                 </div>
-
-                {# Eliminado: Línea de Fecha de Ingreso que no está en el formulario #}
-                {# <div class="info-line d-flex align-items-center mb-2">
-                    <i class="fas fa-calendar-alt me-2" style="color: #BF2642;"></i>
-                    <span class="fw-bold me-2">Ingreso:</span>
-                    <span id="preview-fecha-ingreso">N/A</span>
-                </div> #}
-
-                <div class="info-line d-flex align-items-center mb-2">
-                    <i class="fas fa-map-marker-alt me-2" style="color: #BF2642;"></i>
-                    <span class="fw-bold me-2">Dirección:</span>
-                    <span id="preview-direccion">N/A</span>
-                </div>
-
-                <hr class="my-3">
-
-                <div class="small text-center text-muted">
-                    Construcciones V&G
-                </div>
-            </div>
         </div>
     </div>
 </div>
-
 {% endblock contenido %}
 
 {% block extra_js %}
@@ -80,18 +51,17 @@
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('trabajador-form');
 
-        // Mapeo de IDs de inputs del formulario a IDs de la vista previa
-        // IMPORTANTE: AJUSTA LOS ID DE LA IZQUIERDA ('id_...') a los nombres de campo de tu formulario Django
+        // Mapeo de los IDs de los inputs del formulario (ej. 'id_nombre')
+        // a los IDs de los <span> de la vista previa (ej. 'preview-nombre')
         const fieldMap = {
-            'id_nombre': 'preview-nombre', // Ejemplo: 'nombre' es el campo en el form
+            'id_nombre': 'preview-nombre',
             'id_rut': 'preview-rut',
             'id_cargo': 'preview-cargo',
             'id_telefono': 'preview-telefono',
-            // 'id_fecha_ingreso': 'preview-fecha-ingreso', // <--- Eliminado
             'id_direccion': 'preview-direccion'
-            // Añade o modifica los IDs según tu formulario
         };
 
+        // Función que actualiza la vista previa
         const updatePreview = () => {
             for (const inputId in fieldMap) {
                 const inputElement = document.getElementById(inputId);
@@ -99,27 +69,26 @@
 
                 if (inputElement && previewElement) {
                     let value = inputElement.value;
-
-                    // Si es un SELECT (ej: Cargo, tipo_proyecto), mostramos el texto visible en lugar del valor interno
+                    
+                    // Si es un <select>, obtener el texto visible
                     if (inputElement.tagName === 'SELECT' && inputElement.selectedIndex !== -1) {
                         value = inputElement.options[inputElement.selectedIndex].text;
                     }
 
-                    // Manejo especial para el nombre completo (si está vacío, usar un placeholder)
-                    if (inputId === 'id_nombre') { // Asegúrate que el ID sea 'id_nombre'
+                    // Lógica especial para el nombre (mayúsculas)
+                    if (inputId === 'id_nombre') {
                         previewElement.textContent = value.toUpperCase() || 'NOMBRE COMPLETO';
                     } else {
-                        // Para los demás campos, mostrar el valor o 'N/A'
                         previewElement.textContent = value || 'N/A';
                     }
                 }
             }
         };
 
-        // Escuchar cambios en cualquier input dentro del formulario
+        // Escuchar CUALQUIER input (teclear, seleccionar) en el formulario
         form.addEventListener('input', updatePreview);
 
-        // Inicializar la vista previa al cargar la página
+        // Actualizar la vista previa al cargar la página (por si es un formulario de edición)
         updatePreview();
     });
 </script>
