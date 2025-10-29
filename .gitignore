@@ -1,0 +1,28 @@
+# Archivo .gitignore
+
+# Entorno y Secretos
+.env
+venv/
+
+# Python Cache y Compilados
+__pycache__/
+*.py[cod]
+
+# Bases de Datos Locales
+*.sqlite3
+
+# Archivos de Datos y Dumps (¡IMPORTANTE!)
+*.json
+# Si tienes otros formatos de dump, añádelos aquí (ej. *.sql)
+
+# Archivos de IDE y Sistema Operativo
+.vscode/
+.idea/
+.DS_Store
+*.log
+
+# Archivos Estáticos Recolectados (No suelen ir al repo)
+staticfiles_collected/
+
+# Archivos Multimedia Subidos (Si los tuvieras)
+# media/

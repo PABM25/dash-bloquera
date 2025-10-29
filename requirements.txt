@@ -1,15 +1,13 @@
-# requirements.txt
-# Este archivo lista las dependencias de Python del proyecto.
-# Se usa ejecutando: pip install -r requirements.txt
+# requirements.txt (Ejemplo con versiones fijadas - ¡AJUSTA ESTO!)
+# Ejecuta 'pip freeze > requirements.txt' para obtener las versiones reales.
 
-Django>=4.0        # El framework web principal
-reportlab          # Librería para generar PDFs (usada en ventas/views.py)
-# qrcode           # Comentado, no se está usando actualmente
-django-crispy-forms # Para renderizar formularios con Bootstrap
-crispy-bootstrap5  # Plantillas específicas de Bootstrap 5 para crispy-forms
-python-docx        # Librería para crear y modificar archivos .docx (Word)
-Pillow>=9.0        # Librería para procesamiento de imágenes (requerida por Django para ImageField, aunque aquí se usa para ReportLab)
+Django==4.2.11      # Ejemplo: Usa una versión LTS reciente
+reportlab==4.0.4    # Ejemplo
+django-crispy-forms==2.0 # Ejemplo
+crispy-bootstrap5==0.7 # Ejemplo
+python-docx==0.8.11  # Ejemplo
+Pillow==9.5.0       # Ejemplo
 
-# --- Dependencias de Producción (Añadidas en el Dockerfile) ---
-# gunicorn           # Servidor WSGI para producción (no se usa en desarrollo)
-# psycopg2-binary    # Adaptador de Python para la base de datos PostgreSQL
+# Dependencias de producción (añadidas en Dockerfile, no necesitan estar aquí si solo usas el Dockerfile)
+# gunicorn==...
+# psycopg2-binary==...
