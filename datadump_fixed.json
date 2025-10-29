@@ -1,0 +1,141 @@
+[
+{
+  "model": "inventario.producto",
+  "pk": 1,
+  "fields": {
+    "nombre": "Cemento Verde",
+    "stock": 360,
+    "descripcion": ""
+  }
+},
+{
+  "model": "inventario.producto",
+  "pk": 2,
+  "fields": {
+    "nombre": "Bloques 14",
+    "stock": 2600,
+    "descripcion": "14\""
+  }
+},
+{
+  "model": "inventario.producto",
+  "pk": 3,
+  "fields": {
+    "nombre": "Bloquetas 9",
+    "stock": 497,
+    "descripcion": ""
+  }
+},
+{
+  "model": "ventas.ordencompra",
+  "pk": 3,
+  "fields": {
+    "numero_venta": "OC-2025-0003",
+    "fecha": "2025-10-26T23:40:26.863Z",
+    "cliente": "Espirita Soza Mamani",
+    "rut": "101298566",
+    "direccion": "Copiapo 345",
+    "total": "651500.00"
+  }
+},
+{
+  "model": "ventas.detalleorden",
+  "pk": 5,
+  "fields": {
+    "orden": 3,
+    "producto": 1,
+    "cantidad": 72,
+    "precio_unitario": "6000.00"
+  }
+},
+{
+  "model": "ventas.detalleorden",
+  "pk": 6,
+  "fields": {
+    "orden": 3,
+    "producto": 2,
+    "cantidad": 200,
+    "precio_unitario": "800.00"
+  }
+},
+{
+  "model": "ventas.detalleorden",
+  "pk": 7,
+  "fields": {
+    "orden": 3,
+    "producto": 3,
+    "cantidad": 85,
+    "precio_unitario": "700.00"
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$2cALbwjYlITwnZYBqHWcvm$0l1ddwquMyB2o6gnMHKZVNaAGgWqkk4uegN3Dg0FcZY=",
+    "last_login": "2025-10-13T16:52:54.800Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "pilar.andrea1996@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-09-09T01:45:14.640Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$PrFcKxPk0se79oN85cP1db$QkimAFxRh3DyMHcp98uvXjVBE3Bc+pUu4CvOl7J8KpY=",
+    "last_login": "2025-10-26T01:15:56.162Z",
+    "is_superuser": false,
+    "username": "Pilar",
+    "first_name": "Pilar",
+    "last_name": "Bonnault",
+    "email": "pilar.andrea1996@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-10-26T01:15:55.271Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$mWVixa6JvIsxBsaQgMhSfn$dfLXl5aIaAKOL6LwHpF7b7ghEgkThsg6z98JUTNZm8k=",
+    "last_login": "2025-10-26T23:41:20.575Z",
+    "is_superuser": true,
+    "username": "VG",
+    "first_name": "",
+    "last_name": "",
+    "email": "pilar.andrea1996@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-10-26T22:30:44.363Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "f7abv3er858du3hjxdpvvq6an0pqltm0",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQRO_iGlm78Z-SPmew1j8cQLEUJxXi7iRSCihn3pt5M0_bWv3W8-KnxK4M2eW3CxSfeT5AetB8bzy2eV2mwA-Fn7TzsaX8up3u30GlXvc1KEKLBR0BphgKDoIkEBi9Z4dg5FCC0rEYl7KxSshBSUcWotVGRGCfL8QJNs4:1uvnRC:mkfSxikqPniRb2tQ3wsuntOJRL8dcAfwgztP2r9KYVo",
+    "expire_date": "2025-09-23T01:46:26.922Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "rw7ivwtnyh9s64z1rhv7h3l20d1m5552",
+  "fields": {
+    "session_data": ".eJxVjMEOwiAQRP-FsyHpbruAR-9-A1kWkKqhSWlPxn9Xkh70Mod5b-alPO9b8XtLq5-jOitUp98usDxS7SDeud4WLUvd1jnoruiDNn1dYnpeDvfvoHAr37WFACNAThAoOUMwWSQDowS0EJNktk54MkhuwMEJRULqKQ6spazeH8nHNzk:1vDAMS:V-qmBgfkx1pgjBGHhk2L_rVOKwduvu4icYt4H0LF5Ws",
+    "expire_date": "2025-11-09T23:41:20.584Z"
+  }
+}
+]

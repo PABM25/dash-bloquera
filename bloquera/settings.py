@@ -92,10 +92,15 @@ WSGI_APPLICATION = 'bloquera.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# bloquera/settings.py
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'constructora',       # Nombre de tu BD PostgreSQL
+        'USER': 'postgres', # Tu usuario de PostgreSQL
+        'PASSWORD': 'Pabm261996!*',   # Tu contraseña de PostgreSQL
+        'HOST': 'localhost',           # O la IP/host si no es local
+        'PORT': '5432',                # Puerto por defecto
     }
 }
 
