@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # Servicio de Base de Datos (PostgreSQL)
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      # Estas variables deben coincidir con tu settings.py
+      - POSTGRES_DB=constructora
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Pabm261996!*
+    restart: always
+
+  # Servicio de la Aplicación (Django + Gunicorn)
+  web:
+    build: .
+    volumes:
+      - static_volume:/app/staticfiles_collected # Comparte estáticos con Nginx
+    # Pasa las variables de entorno a settings.py
+    environment:
+      - DJANGO_SECRET_KEY=django-insecure-^5o5g+pxuhyryu*fk*sma3s6=28%j3&t^&$l_9jk*%70y$t$ru
+      - DJANGO_DEBUG=False
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,tu-dominio.com # Cambia 'tu-dominio.com' por tu IP o dominio real
+      - DB_HOST=db  # Importante: 'db' es el nombre de este servicio
+      - DB_NAME=constructora
+      - DB_USER=postgres
+      - DB_PASS=Pabm261996!*
+      - DB_PORT=5432
+    depends_on:
+      - db # Espera a que la BD esté lista
+    restart: always
+
+  # Servicio del Proxy Inverso (Nginx)
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80" # Expone el puerto 80 público
+    volumes:
+      - static_volume:/app/static # Monta los archivos estáticos
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf # Usa nuestra config
+    depends_on:
+      - web
+    restart: always
+
+volumes:
+  postgres_data:
+  static_volume:

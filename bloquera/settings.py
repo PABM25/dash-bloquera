@@ -22,12 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^5o5g+pxuhyryu*fk*sma3s6=28%j3&t^&$l_9jk*%70y$t$ru' # Mantén tu propia clave secreta
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-^5o5g+pxuhyryu*fk*sma3s6=28%j3&t^&$l_9jk*%70y$t$ru')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
 
 # Application definition
@@ -96,11 +96,11 @@ WSGI_APPLICATION = 'bloquera.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'constructora',       # Nombre de tu BD PostgreSQL
-        'USER': 'postgres', # Tu usuario de PostgreSQL
-        'PASSWORD': 'Pabm261996!*',   # Tu contraseña de PostgreSQL
-        'HOST': 'localhost',           # O la IP/host si no es local
-        'PORT': '5432',                # Puerto por defecto
+        'NAME': os.environ.get('DB_NAME', 'constructora'),
+        'USER': os.environ.get('DB_USER', 'postgres'),
+        'PASSWORD': os.environ.get('DB_PASS', 'Pabm261996!*'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'), # Docker Compose cambiará esto a 'db'
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
