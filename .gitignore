@@ -14,7 +14,7 @@ __pycache__/
 # Archivos de Datos y Dumps (¡IMPORTANTE!)
 *.json
 # Si tienes otros formatos de dump, añádelos aquí (ej. *.sql)
-
+datadump_fixed.json
 # Archivos de IDE y Sistema Operativo
 .vscode/
 .idea/
