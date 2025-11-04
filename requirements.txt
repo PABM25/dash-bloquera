@@ -1,13 +1,13 @@
-# requirements.txt (Ejemplo con versiones fijadas - ¡AJUSTA ESTO!)
-# Ejecuta 'pip freeze > requirements.txt' para obtener las versiones reales.
+# requirements.txt
 
-Django==4.2.11      # Ejemplo: Usa una versión LTS reciente
-reportlab==4.0.4    # Ejemplo
-django-crispy-forms==2.0 # Ejemplo
-crispy-bootstrap5==0.7 # Ejemplo
-python-docx==0.8.11  # Ejemplo
-Pillow==9.5.0       # Ejemplo
 
-# Dependencias de producción (añadidas en Dockerfile, no necesitan estar aquí si solo usas el Dockerfile)
-# gunicorn==...
-# psycopg2-binary==...
+Django==5.2.6    
+reportlab==4.4.3
+django-crispy-forms==2.4
+crispy-bootstrap4==2025.6
+crispy-bootstrap5==2025.6
+python-docx==1.2.0
+Pillow==11.3.0
+pytest
+pytest-django
+

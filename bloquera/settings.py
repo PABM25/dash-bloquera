@@ -12,8 +12,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # --- Configuración de Seguridad y Despliegue ---
 
 # Lee la clave secreta OBLIGATORIAMENTE desde el entorno.
-# Si no está definida, Django lanzará un error (¡lo cual es bueno en producción!).
-SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
+# Si no está definida, usa una clave "dummy" temporal SOLO para el 'build'.
+# La clave real de .env la sobrescribirá en 'run'.
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dummy-key-for-build-only')
 
 # Lee el modo DEBUG desde el entorno. Si no está, asume 'False' (seguro).
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
@@ -75,14 +76,17 @@ WSGI_APPLICATION = 'bloquera.wsgi.application'
 
 # --- Configuración de Base de Datos ---
 # Lee OBLIGATORIAMENTE la configuración de la BD desde el entorno.
+# Usamos .get() con valores 'dummy' para que el 'collectstatic'
+# (que se ejecuta durante el 'build') no falle, ya que necesita
+# leer este archivo de settings para funcionar.
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ['DB_NAME'],
-        'USER': os.environ['DB_USER'],
-        'PASSWORD': os.environ['DB_PASS'],
-        'HOST': os.environ['DB_HOST'],
-        'PORT': os.environ['DB_PORT'],
+        'NAME': os.environ.get('DB_NAME', 'dummy_db'),
+        'USER': os.environ.get('DB_USER', 'dummy_user'),
+        'PASSWORD': os.environ.get('DB_PASS', 'dummy_pass'),
+        'HOST': os.environ.get('DB_HOST', 'db'), # 'db' es correcto
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 

@@ -1,5 +1,5 @@
 # docker-compose.yml (Modificado para usar .env)
-version: '3.8'
+# Se eliminó la línea 'version' por ser obsoleta
 
 services:
   # Servicio de Base de Datos (PostgreSQL)
