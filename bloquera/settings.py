@@ -14,13 +14,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Lee la clave secreta OBLIGATORIAMENTE desde el entorno.
 # Si no está definida, usa una clave "dummy" temporal SOLO para el 'build'.
 # La clave real de .env la sobrescribirá en 'run'.
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dummy-key-for-build-only')
-
+# LÍNEA CORREGIDA:
+SECRET_KEY = 'django-insecure-^5o5g+pxuhyryu*fk*sma3s6=28%j3&t^&$l_9jk*%70y$t$ru'
 # Lee el modo DEBUG desde el entorno. Si no está, asume 'False' (seguro).
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+DEBUG = True
 
 # Lee los hosts permitidos desde el entorno. Si no está, usa una lista vacía.
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
@@ -82,11 +82,11 @@ WSGI_APPLICATION = 'bloquera.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'dummy_db'),
-        'USER': os.environ.get('DB_USER', 'dummy_user'),
-        'PASSWORD': os.environ.get('DB_PASS', 'dummy_pass'),
-        'HOST': os.environ.get('DB_HOST', 'db'), # 'db' es correcto
-        'PORT': os.environ.get('DB_PORT', '5432'),
+        'NAME': 'constructora',
+        'USER': 'postgres',
+        'PASSWORD': 'Pabm261996!*',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
