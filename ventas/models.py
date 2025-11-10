@@ -20,8 +20,8 @@ class OrdenCompra(models.Model):
     """
     # Campo para el número de venta autogenerado.
     numero_venta = models.CharField(max_length=15, unique=True, editable=False, blank=True)
-    # Fecha de creación automática.
-    fecha = models.DateTimeField(auto_now_add=True)
+    # Fecha de creación. Ahora con default=timezone.now para permitir edición.
+    fecha = models.DateTimeField(default=timezone.now)
     # Datos del cliente.
     cliente = models.CharField(max_length=100)
     rut = models.CharField(max_length=12, blank=True, null=True)

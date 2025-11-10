@@ -1,5 +1,4 @@
 from django.contrib import admin
-# Asegúrate de importar DetalleOrden
 from .models import OrdenCompra, Trabajador, Asistencia, Producto, Gasto, DetalleOrden
 
 # --- NUEVO ---

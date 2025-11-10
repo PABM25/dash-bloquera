@@ -1,14 +1,18 @@
 # ventas/forms.py
 from django import forms
 from django.forms.models import inlineformset_factory
+from django.forms import DateInput # Importación añadida
 from .models import OrdenCompra, DetalleOrden
 from inventario.models import Producto # Importar Producto
 
 class OrdenCompraForm(forms.ModelForm):
     class Meta:
         model = OrdenCompra
-        fields = ['cliente', 'direccion', 'rut']
+        # Se añade 'fecha'
+        fields = ['fecha', 'cliente', 'rut', 'direccion']
         widgets = {
+            # Nuevo widget para el selector de fecha
+            'fecha': DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'cliente': forms.TextInput(attrs={'class': 'form-control'}),
             'rut': forms.TextInput(attrs={'class': 'form-control'}),
             'direccion': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}), # Textarea
