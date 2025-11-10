@@ -31,14 +31,7 @@ urlpatterns = [
 ]
 
 # --- Configuración para Desarrollo (DEBUG=True) ---
-# Esto le dice a Django que sirva los archivos estáticos (CSS, JS) 
-# y multimedia (subidas de usuarios) él mismo cuando está en modo DEBUG.
-# En producción, Nginx o un servicio similar debe hacer esto.
-
 if settings.DEBUG:
-    # Servir archivos estáticos (desde STATIC_URL y STATICFILES_DIRS)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0] if settings.STATICFILES_DIRS else settings.STATIC_ROOT)
-
-    # Servir archivos multimedia (si están configurados MEDIA_URL y MEDIA_ROOT)
+    
     if hasattr(settings, "MEDIA_URL") and hasattr(settings, "MEDIA_ROOT"):
         urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
