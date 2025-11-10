@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     # Third Party Apps
     'crispy_forms',
     'crispy_bootstrap5',
-    'django.contrib.humanize'
+    'django.contrib.humanize',
 ]
 
 MIDDLEWARE = [
@@ -89,6 +89,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('DB_PASSWORD', 'dummy_password'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '5432'),
+
     }
 }
 
