@@ -5,19 +5,21 @@ Archivo de configuración principal del proyecto Django "bloquera".
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # --- Definición de Rutas Base ---
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Cargar variables de entorno desde .env
+load_dotenv(BASE_DIR / '.env')
+
 # --- Configuración de Seguridad y Despliegue ---
 
 # Lee la clave secreta OBLIGATORIAMENTE desde el entorno.
-# Si no está definida, usa una clave "dummy" temporal SOLO para el 'build'.
-# La clave real de .env la sobrescribirá en 'run'.
-# LÍNEA CORREGIDA:
-SECRET_KEY = 'django-insecure-^5o5g+pxuhyryu*fk*sma3s6=28%j3&t^&$l_9jk*%70y$t$ru'
-# Lee el modo DEBUG desde el entorno. Si no está, asume 'False' (seguro).
-DEBUG = True
+SECRET_KEY = os.environ.get('SECRET_KEY') # <-- MODIFICADO
+
+# Lee el modo DEBUG desde el entorno.
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 # Lee los hosts permitidos desde el entorno. Si no está, usa una lista vacía.
 ALLOWED_HOSTS = []
@@ -82,11 +84,11 @@ WSGI_APPLICATION = 'bloquera.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'constructora',
-        'USER': 'postgres',
-        'PASSWORD': 'Pabm261996!*',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.environ.get('DB_NAME', 'dummy_db'),
+        'USER': os.environ.get('DB_USER', 'dummy_user'),    
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'dummy_password'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 

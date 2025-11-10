@@ -209,12 +209,3 @@ html, body {
     height: 60px; 
     flex-shrink: 0; /* Evita que la barra se encoja */
 }
-
-/* Contenedor del contenido (definido en base.html) */
-/* Esto es clave para el layout de "no scroll" global */
-#contenido {
-    /* Altura = (100% del viewport) - (altura de la navbar) - (padding superior/inferior) */
-    height: calc(100vh - 60px - 48px); 
-    overflow-y: auto; /* Permite scroll SÓLO aquí */
-    overflow-x: hidden; 
-}
