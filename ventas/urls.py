@@ -19,4 +19,5 @@ urlpatterns = [
     path('detalle/<int:orden_id>/pdf/', views.descargar_orden_pdf, name='descargar_orden_pdf'),
     # Ej. /ventas/detalle/5/docx/
     path('detalle/<int:orden_id>/docx/', views.descargar_orden_docx, name='descargar_orden_docx'),
+    path('detalle/<int:orden_id>/pagar/', views.registrar_pago_orden, name='registrar_pago_orden'),
 ]

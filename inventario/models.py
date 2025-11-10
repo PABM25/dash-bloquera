@@ -13,6 +13,12 @@ class Producto(models.Model):
     """
     nombre = models.CharField(max_length=100, unique=True)
     stock = models.PositiveIntegerField(default=0)
+    precio_costo = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0, 
+        help_text="Cuánto cuesta adquirir este producto."
+    )
     descripcion = models.TextField(blank=True, null=True)
 
     def __str__(self):

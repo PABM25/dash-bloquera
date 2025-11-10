@@ -1,0 +1,69 @@
+{# ventas/templates/ventas/registrar_pago_orden.html (NUEVO ARCHIVO) #}
+{% extends 'core/base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block title %}Registrar Pago{% endblock title %}
+
+{% block contenido %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header card-header-branding">
+                    <h2 class="mb-0">Registrar Pago para Orden {{ orden.numero_venta }}</h2>
+                </div>
+                <div class="card-body">
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}" role="alert">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <h4 class="mb-3">Resumen de la Orden</h4>
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Cliente:
+                            <strong>{{ orden.cliente }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Total Orden:
+                            <strong>${{ orden.total|floatformat:0|intcomma }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center text-success">
+                            Monto Pagado:
+                            <strong>${{ orden.monto_pagado|floatformat:0|intcomma }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center text-danger">
+                            Saldo Pendiente:
+                            <strong>${{ orden.saldo_pendiente|floatformat:0|intcomma }}</strong>
+                        </li>
+                    </ul>
+
+                    {% if orden.estado_pago != 'PAGADA' %}
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                <a href="{% url 'ventas:detalle_orden' orden.id %}" class="btn btn-secondary btn-lg">Cancelar</a>
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-check"></i> Registrar Pago
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-success text-center">
+                            <h4 class="alert-heading">¡Orden Pagada!</h4>
+                            <p>Esta orden ya ha sido pagada en su totalidad.</p>
+                            <a href="{% url 'ventas:detalle_orden' orden.id %}" class="btn btn-primary">Volver al Detalle</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock contenido %}

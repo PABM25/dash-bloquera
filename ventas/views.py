@@ -22,7 +22,7 @@ import os
 # --- Importaciones de Modelos y Forms ---
 from .models import OrdenCompra, DetalleOrden
 from inventario.models import Producto
-from .forms import OrdenCompraForm, DetalleOrdenFormSet
+from .forms import *
 
 # --- Importaciones de Librerías (PDF, DOCX, etc.) ---
 from io import BytesIO # Buffer en memoria para archivos
@@ -81,10 +81,15 @@ def crear_orden(request):
                 orden = orden_form.save(commit=False)
                 detalles_instancias = detalle_formset.save(commit=False)
                 
+                # --- CAMBIOS AQUÍ ---
                 total_orden = 0
-                productos_a_actualizar = [] # Lista para guardar {producto_db, cantidad}
-                detalles_a_guardar = [] # Lista para guardar instancias de detalle
-                valid_details_count = 0 # Contador de líneas válidas
+                total_costo_orden = 0 # <- Añadir
+                total_utilidad_orden = 0 # <- Añadir
+                # --- FIN DE CAMBIOS ---
+                
+                productos_a_actualizar = [] 
+                detalles_a_guardar = [] 
+                valid_details_count = 0
 
                 # 2. Validar stock y calcular total
                 for form in detalle_formset:
@@ -109,9 +114,20 @@ def crear_orden(request):
                                 # y la transacción se revertirá.
                                 raise Exception(f"No hay suficiente stock para: {producto.nombre} (disponible: {producto_db.stock})")
 
-                            # Si el stock es válido, acumular
+                            # --- CAMBIOS AQUÍ: CALCULAR COSTO Y UTILIDAD ---
+                            costo_unitario = producto_db.precio_costo # Obtener costo
+                            
                             total_linea = cantidad * precio
+                            costo_total_linea = cantidad * costo_unitario # Calcular costo de línea
+                            utilidad_linea = total_linea - costo_total_linea # Calcular utilidad de línea
+
                             total_orden += total_linea
+                            total_costo_orden += costo_total_linea # <- Añadir
+                            total_utilidad_orden += utilidad_linea # <- Añadir
+                            
+                            detalle.costo_unitario_en_venta = costo_unitario # <- Añadir (Guardar el costo)
+                            # --- FIN DE CAMBIOS ---
+
                             detalles_a_guardar.append(detalle)
                             productos_a_actualizar.append({'producto': producto_db, 'cantidad': cantidad})
 
@@ -119,9 +135,13 @@ def crear_orden(request):
                 if valid_details_count == 0:
                     raise Exception("Debes añadir al menos un producto válido a la orden.")
 
-                # 3. Guardar en Base de Datos (si todo fue válido)
+                # --- CAMBIOS AQUÍ: GUARDAR NUEVOS TOTALES ---
                 orden.total = total_orden
-                orden.save() # Guardar la orden principal (obtiene un ID)
+                orden.total_costo = total_costo_orden # <- Añadir
+                orden.total_utilidad = total_utilidad_orden # <- Añadir
+                # --- FIN DE CAMBIOS ---
+                
+                orden.save()
 
                 # 4. Guardar detalles y actualizar stock
                 for detalle in detalles_a_guardar:
@@ -426,3 +446,42 @@ def descargar_orden_docx(request, orden_id):
         print(f"Error al generar DOCX: {e}")
         messages.error(request, f"Error al generar DOCX: {e}.")
         return redirect('ventas:detalle_orden', orden_id=orden.pk)
+    
+    
+    
+    
+    # --- VISTA AÑADIDA ---
+@login_required
+def registrar_pago_orden(request, orden_id):
+    """
+    Maneja la lógica para registrar un pago (GET y POST)
+    para una Orden de Compra específica.
+    """
+    orden = get_object_or_404(OrdenCompra, pk=orden_id)
+    
+    if request.method == 'POST':
+        # Pasamos la instancia de la orden al formulario para la validación
+        form = RegistrarPagoForm(request.POST, orden=orden)
+        
+        if form.is_valid():
+            monto = form.cleaned_data['monto']
+            
+            # Usamos el método del modelo para registrar el pago
+            orden.registrar_pago(monto)
+            
+            messages.success(request, f"Pago de ${monto:,.0f} registrado exitosamente.")
+            return redirect('ventas:detalle_orden', orden_id=orden.pk)
+        else:
+            # Si el formulario no es válido (ej. monto excede el saldo),
+            # los errores se mostrarán automáticamente en la plantilla.
+            messages.error(request, "Error al registrar el pago. Revisa el formulario.")
+            
+    else: # Método GET
+        form = RegistrarPagoForm(orden=orden)
+
+    context = {
+        'form': form,
+        'orden': orden
+    }
+    # Usaremos una nueva plantilla para esto
+    return render(request, 'ventas/registrar_pago_orden.html', context)

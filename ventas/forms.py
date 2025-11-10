@@ -40,3 +40,35 @@ DetalleOrdenFormSet = inlineformset_factory(
     can_delete=True,
     can_delete_extra=True # Permitir borrar formularios añadidos dinámicamente
 )
+
+class RegistrarPagoForm(forms.Form):
+    """
+    Formulario simple para registrar un abono a una Orden de Compra.
+    """
+    monto = forms.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        label="Monto a Pagar",
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el monto'})
+    )
+    
+    def __init__(self, *args, **kwargs):
+        # Recibimos la orden como argumento para validar el monto máximo
+        self.orden = kwargs.pop('orden', None)
+        super().__init__(*args, **kwargs)
+
+    def clean_monto(self):
+        """
+        Valida que el monto ingresado no sea mayor
+        al saldo pendiente de la orden.
+        """
+        monto = self.cleaned_data.get('monto')
+        if monto <= 0:
+            raise forms.ValidationError("El monto debe ser positivo.")
+            
+        if self.orden:
+            saldo_pendiente = self.orden.saldo_pendiente
+            if monto > saldo_pendiente:
+                raise forms.ValidationError(f"El monto no puede superar el saldo pendiente de ${saldo_pendiente:,.0f}")
+        
+        return monto

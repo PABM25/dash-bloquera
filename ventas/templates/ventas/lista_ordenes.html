@@ -1,11 +1,12 @@
 {% extends 'core/base.html' %}
 {% load static %}
-{% load humanize %} {% block title %}Lista de Órdenes de Compra{% endblock title %}
+{% load humanize %} 
+{% block title %}Lista de Órdenes de Compra{% endblock title %}
 
 {% block contenido %}
 <div class="container-fluid mt-4">
     <div class="row">
-        <div class="col-md-10 offset-md-1">
+        <div class="col-md-12">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h2 class="mb-0">Órdenes de Compra Registradas</h2>
@@ -21,8 +22,9 @@
                                     <th>N° Venta</th>
                                     <th>Fecha</th>
                                     <th>Cliente</th>
-                                    <th>RUT</th>
                                     <th>Total</th>
+                                    <th>Estado Pago</th>
+                                    <th>Saldo Pendiente</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -32,17 +34,32 @@
                                     <td>{{ orden.numero_venta|default:orden.id }}</td>
                                     <td>{{ orden.fecha|date:"d-m-Y H:i" }}</td>
                                     <td>{{ orden.cliente }}</td>
-                                    <td>{{ orden.rut|default:"N/A" }}</td>
+                                    
                                     <td>${{ orden.total|floatformat:0|intcomma }}</td>
+                                    <td>
+                                        {% if orden.estado_pago == 'PAGADA' %}
+                                            <span class="badge bg-success">{{ orden.get_estado_pago_display }}</span>
+                                        {% elif orden.estado_pago == 'ABONADA' %}
+                                            <span class="badge bg-warning text-dark">{{ orden.get_estado_pago_display }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ orden.get_estado_pago_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>${{ orden.saldo_pendiente|floatformat:0|intcomma }}</td>
                                     <td>
                                         <a href="{% url 'ventas:detalle_orden' orden.id %}" class="btn btn-info btn-sm" title="Ver Detalle">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        </td>
+                                        {% if orden.estado_pago != 'PAGADA' %}
+                                        <a href="{% url 'ventas:registrar_pago_orden' orden.id %}" class="btn btn-success btn-sm" title="Registrar Pago">
+                                            <i class="fas fa-dollar-sign"></i>
+                                        </a>
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted">No hay órdenes de compra registradas.</td>
+                                    <td colspan="7" class="text-center text-muted">No hay órdenes de compra registradas.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
