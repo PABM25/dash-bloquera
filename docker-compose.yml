@@ -18,7 +18,7 @@ services:
               python manage.py migrate --noinput &&  # <--- ¡CORRECCIÓN CRÍTICA!
               gunicorn bloquera.wsgi:application --bind 0.0.0.0:8000"
       volumes:
-        - static_volume:/app/staticfiles_collected
+        - static_volume:/app/static
       env_file: ./.env
       depends_on:
         - db

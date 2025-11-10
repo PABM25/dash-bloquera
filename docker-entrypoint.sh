@@ -16,7 +16,8 @@ echo "¡Base de datos lista! Aplicando migraciones y recolectando estáticos."
 python manage.py migrate --noinput
 
 # 2. Recolectar Estáticos
-python manage.py collectstatic --noinput
+# Ahora usando la ruta consistente /app/static
+python manage.py collectstatic --noinput --settings=bloquera.settings
 
 echo "¡Base de datos configurada! Iniciando servidor Gunicorn."
 
