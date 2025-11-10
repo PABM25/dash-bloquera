@@ -13,6 +13,9 @@ services:
   # Servicio de la Aplicación (Django + Gunicorn)
   web:
     build: .
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             gunicorn bloquera.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - static_volume:/app/staticfiles_collected # Comparte estáticos con Nginx
     env_file: ./.env # <- Lee las variables DJANGO_*, DB_* desde .env

@@ -34,7 +34,10 @@
               <div class="col-md-6 mb-3">
                  {{ orden_form.rut|as_crispy_field }}
               </div>
-              <div class="col-md-12 mb-3">
+              <div class="col-md-6 mb-3">
+                 {{ orden_form.fecha|as_crispy_field }}
+              </div>
+              <div class="col-md-6 mb-3">
                  {{ orden_form.direccion|as_crispy_field }}
               </div>
             </div>
@@ -64,7 +67,8 @@
                        <div class="form-check" style="display: none;">
                            {{ form.DELETE }}
                        </div>
-                       <button type...
+                       <button type="button" class="btn btn-danger btn-sm remove-form-row w-100">
+                            <i class="fas fa-trash"></i> Quitar
                        </button>
                       {% endif %}
                   </div>
@@ -81,7 +85,19 @@
                      {{ detalle_formset.empty_form.producto|as_crispy_field }}
                      <small class="text-muted stock-display" id="stock-__prefix__"></small>
                   </div>
+                  <div class="col-md-2 mb-2">
+                      {{ detalle_formset.empty_form.cantidad|as_crispy_field }}
                   </div>
+                  <div class="col-md-3 mb-2">
+                     {{ detalle_formset.empty_form.precio_unitario|as_crispy_field }}
+                  </div>
+                  <div class="col-md-2 mb-2 d-flex align-items-end">
+                      {{ detalle_formset.empty_form.DELETE }}
+                       <button type="button" class="btn btn-danger btn-sm remove-form-row w-100">
+                            <i class="fas fa-trash"></i> Quitar
+                       </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -100,17 +116,41 @@
 
     <div class="col-lg-5 col-md-12">
         <h5 class="text-center fw-bold mb-3" style="color: #BF2642;">Vista Previa de Comprobante</h5>
-        <div id="preview-ticket" class="card shadow-sm p-4 mx-auto" style="max-width: 400px; min-height: 500px; ...">
+        <div id="preview-ticket" class="card shadow-sm p-4 mx-auto" style="max-width: 400px; min-height: 500px; font-family: 'Courier New', monospace;">
+             <div class="logo-container d-flex justify-content-between align-items-center mb-3">
+                     <div class="logo">
+                         <img src="{% static 'app/img/logo.png' %}" alt="Logo" class="logo-img" style="width: auto; height: 50px;">
+                     </div>
+                     <div class="empresa text-start small">
+                         <strong>CONSTRUCCIONES V & G LIZ CASTILLO GARCIA SPA</strong><br>
+                         RUT: 77.858.577-4<br>
+                         Dirección: Vilaco 301, Toconao<br>
+                         Teléfono: +56 9 1234 5678
+                     </div>
+                 </div>
             <div><strong>Cliente:</strong> <span id="preview-cliente">N/A</span></div>
             <div><strong>RUT:</strong> <span id="preview-rut">N/A</span></div>
+            <div><strong>Fecha:</strong> <span id="preview-fecha">{% now "d-m-Y H:i" %}</span></div>
             <div><strong>Dirección:</strong> <span id="preview-direccion">N/A</span></div>
             <hr style="border-top: 1px dashed #555;">
+             <strong class="text-start d-block mb-1">Detalle</strong>
+            <table class="productos table table-sm small">
+                 <thead>
+                         <tr>
+                             <th class="text-start">Producto</th>
+                             <th style="width: 15%;">Cant</th>
+                             <th style="width: 25%;">P. Unit.</th>
+                             <th style="width: 25%;" class="text-end">Total</th>
+                         </tr>
+                     </thead>
             <tbody id="preview-productos-body">
                 <tr><td colspan="4" class="text-center text-muted">(Vacío)</td></tr>
             </tbody>
             </table>
             <hr style="border-top: 1px dashed #555;">
             <div class="text-end fw-bold fs-5">Total: <span id="preview-total">$0</span></div>
+            <hr style="border-top: 1px dashed #555;">
+             <div class="gracias small mt-3 text-center">¡Gracias por su compra!<br>Esperamos atenderle pronto.</div>
             </div>
     </div>
 
@@ -251,9 +291,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewCliente = document.getElementById('preview-cliente');
     const previewRut = document.getElementById('preview-rut');
     const previewDireccion = document.getElementById('preview-direccion');
+    const previewFecha = document.getElementById('preview-fecha'); // Nuevo
     const previewProductosBody = document.getElementById('preview-productos-body');
     const previewTotal = document.getElementById('preview-total');
-
+    
     // Función auxiliar para formatear a CLP
     const formatCurrency = (number) => '$' + new Intl.NumberFormat('es-CL').format(Math.round(number || 0));
 
@@ -266,6 +307,18 @@ document.addEventListener('DOMContentLoaded', function() {
         previewCliente.textContent = document.getElementById('id_cliente')?.value || 'N/A';
         previewRut.textContent = document.getElementById('id_rut')?.value || 'N/A';
         previewDireccion.textContent = document.getElementById('id_direccion')?.value || 'N/A';
+        
+        // Obtener y formatear la fecha
+        const inputFecha = document.getElementById('id_fecha')?.value;
+        if (inputFecha) {
+             // El input es de tipo date (YYYY-MM-DD). Simplemente lo mostramos.
+             // Para un formato más amigable, podrías formatearlo aquí.
+            previewFecha.textContent = inputFecha; 
+        } else {
+            // Si el campo está vacío, mantenemos el valor por defecto que ya está en el HTML
+            // (que es la fecha y hora actual usando {% now %})
+        }
+
 
         // Actualizar productos y total
         let granTotal = 0;
@@ -287,10 +340,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (productoSelect && cantidadInput && precioInput) {
                 const productoNombre = productoSelect.options[productoSelect.selectedIndex]?.text || '...';
+                const productoValue = productoSelect.value;
                 const cantidad = parseFloat(cantidadInput.value) || 0;
                 const precio = parseFloat(precioInput.value) || 0;
 
-                if (cantidad > 0 && precio >= 0) {
+                if (productoValue && cantidad > 0 && precio >= 0) {
                     hasProducts = true;
                     const totalLinea = cantidad * precio;
                     granTotal += totalLinea;
@@ -298,10 +352,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Crear la fila <tr> para la vista previa
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td style="text-align: left;">${productoNombre}</td>
-                        <td style="text-align: center;">${cantidad}</td>
-                        <td style="text-align: right;">${formatCurrency(precio)}</td>
-                        <td style="text-align: right;">${formatCurrency(totalLinea)}</td>
+                        <td class="text-start">${productoNombre}</td>
+                        <td class="text-center">${cantidad}</td>
+                        <td class="text-end">${formatCurrency(precio)}</td>
+                        <td class="text-end fw-bold">${formatCurrency(totalLinea)}</td>
                     `;
                     previewProductosBody.appendChild(tr);
                 }
@@ -309,7 +363,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         if (!hasProducts) {
-            previewProductosBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">(Vacío)</td></tr>';
+             let emptyRow = document.createElement('tr');
+             emptyRow.innerHTML = '<td colspan="4" class="text-center text-muted">(Vacío)</td>';
+             previewProductosBody.appendChild(emptyRow);
         }
 
         // Actualizar el gran total
