@@ -1,4 +1,4 @@
-# bloquera/settings.py (Modificado para no tener secretos por defecto)
+# bloquera/settings.py 
 """
 Archivo de configuración principal del proyecto Django "bloquera".
 """
