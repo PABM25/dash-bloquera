@@ -11,6 +11,7 @@ Incluye:
 
 # --- Importaciones de Django ---
 from django.shortcuts import render, get_object_or_404, redirect, reverse
+from django.http import JsonResponse # <-- ¡IMPORTACIÓN AÑADIDA!
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from datetime import date
@@ -214,3 +215,46 @@ def registrar_pago_gasto(request):
 
     # Si no es POST, redirigir
     return redirect('recursos_humanos:calcular_salario')
+
+
+# --- VISTAS DEL CALENDARIO (AÑADIDAS AL FINAL) ---
+
+@login_required
+def calendario_asistencia(request):
+    """
+    Muestra la página HTML que contendrá el calendario.
+    """
+    return render(request, 'recursos_humanos/calendario_asistencia.html')
+
+
+@login_required
+def asistencia_feed(request):
+    """
+    Esta es la vista de API que FullCalendar llamará.
+    Devuelve las asistencias en formato JSON.
+    """
+    # FullCalendar envía las fechas 'start' y 'end' de la vista actual
+    start = request.GET.get('start')
+    end = request.GET.get('end')
+
+    if not start or not end:
+        return JsonResponse({'error': 'Faltan parámetros start/end'}, status=400)
+
+    # Cargar asistencias con el trabajador relacionado para optimizar
+    asistencias = Asistencia.objects.filter(
+        fecha__range=[start, end]
+    ).select_related('trabajador')
+
+    eventos = []
+    for asistencia in asistencias:
+        # Creamos un "evento" por cada asistencia registrada
+        eventos.append({
+            'title': f'{asistencia.trabajador.nombre} ({asistencia.get_tipo_proyecto_display()})',
+            'start': asistencia.fecha.isoformat(), # Formato YYYY-MM-DD
+            'allDay': True,
+            # (Opcional) Asignar un color por tipo de proyecto
+            'color': '#28a745' if asistencia.tipo_proyecto == 'CONSTRUCTORA' else '#17a2b8'
+        })
+
+    # 'safe=False' es necesario porque estamos devolviendo una lista
+    return JsonResponse(eventos, safe=False)

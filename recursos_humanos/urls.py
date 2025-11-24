@@ -27,4 +27,8 @@ urlpatterns = [
     path('salarios/calcular/', views.calcular_salario, name='calcular_salario'),
     # Ej. /personal/salarios/registrar_gasto/ (Procesa el pago)
     path('salarios/registrar_gasto/', views.registrar_pago_gasto, name='registrar_pago_gasto'),
+    
+    path('calendario/', views.calendario_asistencia, name='calendario_asistencia'),
+    # El feed de datos JSON para el calendario
+    path('api/asistencia_feed/', views.asistencia_feed, name='api_asistencia_feed'),
 ]

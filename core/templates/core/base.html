@@ -31,12 +31,17 @@
                 <a href="{% url 'ventas:lista_ordenes' %}" class="list-group-item list-group-item-action {% if 'ventas' in request.path %}active{% endif %}">
                     <i class="fas fa-shopping-cart me-2"></i> Ventas
                 </a>
-                <a href="{% url 'recursos_humanos:lista_trabajadores' %}" class="list-group-item list-group-item-action {% if 'personal' in request.path %}active{% endif %}">
+                <a href="{% url 'recursos_humanos:lista_trabajadores' %}" class="list-group-item list-group-item-action {% if 'personal' in request.path and 'calendario' not in request.path %}active{% endif %}">
                     <i class="fas fa-users me-2"></i> Personal
+                </a>
+                
+                <a href="{% url 'recursos_humanos:calendario_asistencia' %}" class="list-group-item list-group-item-action {% if 'calendario' in request.path %}active{% endif %}" style="padding-left: 2.5rem;"> 
+                    <i class="fas fa-calendar-alt me-2" style="font-size: 0.9em;"></i> Calendario
                 </a>
                 <a href="{% url 'finanzas:lista_gastos' %}" class="list-group-item list-group-item-action {% if 'finanzas' in request.path %}active{% endif %}">
                     <i class="fas fa-receipt me-2"></i> Finanzas
                 </a>
+
             </div>
         </div>
         {% endif %}
